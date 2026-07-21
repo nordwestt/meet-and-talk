@@ -9,8 +9,8 @@ import { siteConfig } from '@/lib/data'
 import { useI18n } from '@/lib/i18n/context'
 
 const galleryImages = [
-  '/images/community/community-1.svg',
-  '/images/community/community-2.svg',
+  '/images/community/community-1.png',
+  '/images/community/community-2.png',
   '/images/community/community-3.svg',
   '/images/community/community-4.svg',
   '/images/community/community-5.svg',

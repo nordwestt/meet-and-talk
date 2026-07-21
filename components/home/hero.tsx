@@ -45,7 +45,7 @@ export function Hero() {
         <div className="relative">
           <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border-2 border-border shadow-[8px_8px_0_0_hsl(var(--primary))]">
             <Image
-              src="/images/hero-meetup.svg"
+              src="/images/hero-meetup.png"
               alt="Friends chatting and laughing together at a Meet & Talk meetup in a cozy bar"
               fill
               priority

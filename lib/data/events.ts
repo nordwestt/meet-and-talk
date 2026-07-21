@@ -22,7 +22,7 @@ export const events: MeetEvent[] = [
       'Our weekly classic. Grab a name tag, find a table by language level, and switch every 20 minutes. Newcomers always welcome.',
     capacity: 60,
     going: 47,
-    image: '/images/community/community-1.svg',
+    image: '/images/community/community-1.png',
     price: 'Free',
   },
   {
@@ -62,7 +62,7 @@ export const events: MeetEvent[] = [
       'A relaxed mixer for Berlin founders, makers and the startup-curious. Lightning intros, then open conversation.',
     capacity: 80,
     going: 62,
-    image: '/images/community/community-2.svg',
+    image: '/images/community/community-2.png',
     price: 'Free',
   },
   {

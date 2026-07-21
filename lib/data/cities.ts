@@ -9,10 +9,10 @@ export const cities: City[] = [
     countryFlag: '🇩🇰',
     description:
       'Hygge meets hello. Copenhagen was where Meet & Talk began — cozy bars, warm people, and dozens of languages around every table.',
-    image: '/images/cities/copenhagen.svg',
+    image: '/images/cities/copenhagen.png',
     gallery: [
-      '/images/community/community-1.svg',
-      '/images/community/community-2.svg',
+      '/images/community/community-1.png',
+      '/images/community/community-2.png',
       '/images/community/community-3.svg',
     ],
     memberCount: 2400,
@@ -38,7 +38,7 @@ export const cities: City[] = [
     countryFlag: '🇮🇹',
     description:
       'From Juliet\u2019s balcony to buzzing osterie — Verona brings a warm Italian welcome to every language lover.',
-    image: '/images/cities/verona.svg',
+    image: '/images/cities/verona.png',
     gallery: [
       '/images/community/community-4.svg',
       '/images/community/community-5.svg',
@@ -65,11 +65,11 @@ export const cities: City[] = [
     countryFlag: '🇩🇪',
     description:
       'Loud, free and endlessly international. Berlin\u2019s Meet & Talk crowd spills across Kreuzberg\u2019s best bars every week.',
-    image: '/images/cities/berlin.svg',
+    image: '/images/cities/berlin.png',
     gallery: [
-      '/images/community/community-2.svg',
+      '/images/community/community-2.png',
       '/images/community/community-6.svg',
-      '/images/community/community-1.svg',
+      '/images/community/community-1.png',
     ],
     memberCount: 3100,
     timezone: 'CET',
@@ -93,7 +93,7 @@ export const cities: City[] = [
     countryFlag: '🇪🇸',
     description:
       'Sun, sea and endless conversation. Barcelona\u2019s tables mix Catalan, Spanish, English and everything in between.',
-    image: '/images/cities/barcelona.svg',
+    image: '/images/cities/barcelona.png',
     gallery: [
       '/images/community/community-3.svg',
       '/images/community/community-5.svg',
@@ -120,9 +120,9 @@ export const cities: City[] = [
     countryFlag: '🇫🇷',
     description:
       'Apéro, accents and new friends by the canal. Paris turns language practice into an art de vivre.',
-    image: '/images/cities/paris.svg',
+    image: '/images/cities/paris.png',
     gallery: [
-      '/images/community/community-1.svg',
+      '/images/community/community-1.png',
       '/images/community/community-4.svg',
       '/images/community/community-6.svg',
     ],
