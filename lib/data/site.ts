@@ -7,9 +7,9 @@ export const siteConfig = {
     'A grassroots community that brings people together in bars and cafés to practice languages and make real friends.',
   founded: 2023,
   stats: {
-    cities: '5+',
-    members: '11k+',
-    events: '40+',
+    cities: '2 live',
+    members: '1k+',
+    events: '2 weekly',
   },
   /** Global social links (city pages override with their own) */
   social: [

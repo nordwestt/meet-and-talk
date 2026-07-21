@@ -21,7 +21,7 @@ export const topics: Topic[] = [
       'Trade ideas, find co-founders, and swap war stories with local founders and creative builders over coffee or a cold one.',
     icon: 'Rocket',
     color: 'var(--chart-2)',
-    status: 'live',
+    status: 'soon',
   },
   {
     id: 'travel-culture',
@@ -32,7 +32,7 @@ export const topics: Topic[] = [
       'For the curious and the nomadic. Share travel tales, cultural quirks, and hidden gems from around the world.',
     icon: 'Globe2',
     color: 'var(--chart-4)',
-    status: 'live',
+    status: 'soon',
   },
   {
     id: 'books',
@@ -43,7 +43,7 @@ export const topics: Topic[] = [
       'A friendly book circle for people who love to read and to talk about what they read — across genres and languages.',
     icon: 'BookOpen',
     color: 'var(--chart-5)',
-    status: 'live',
+    status: 'soon',
   },
   {
     id: 'ai-tech',

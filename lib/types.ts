@@ -63,6 +63,8 @@ export type Topic = {
   status: 'live' | 'soon'
 }
 
+export type CityStatus = 'live' | 'planned'
+
 export type City = {
   id: string
   slug: string
@@ -71,6 +73,8 @@ export type City = {
   countryFlag: string
   /** local language teaser */
   description: string
+  /** live = active community; planned = launching soon */
+  status: CityStatus
   image?: string
   gallery?: string[]
   memberCount?: number

@@ -58,7 +58,7 @@ export const en = {
   'section.events.subtitle': 'Grab a drink and join the conversation this week.',
   'section.cities.title': 'Find your city',
   'section.cities.subtitle':
-    'From Copenhagen to Verona — a Meet & Talk near you.',
+    'From Trento to Copenhagen — live now, with more cities on the way.',
   'section.topics.title': 'Pick a topic',
   'section.topics.subtitle':
     'Language exchange is just the start. Meet around what you love.',
@@ -105,6 +105,13 @@ export const en = {
   'cities.viewAll': 'View all cities',
   'cities.joinGroup': 'Join the group',
   'cities.activeTopics': 'Active topics',
+  'cities.live': 'Live now',
+  'cities.liveBadge': 'Live',
+  'cities.plannedSection': 'Planned cities',
+  'cities.plannedBadge': 'Planned',
+  'cities.plannedHint':
+    'Not in your city yet? Join the WhatsApp waitlist and we\u2019ll let you know when we launch.',
+  'cities.joinWaitlist': 'Join WhatsApp waitlist',
 
   'topics.eyebrow': 'Topics',
   'topics.title': 'Meet & Talk topics',

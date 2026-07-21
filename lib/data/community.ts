@@ -4,7 +4,7 @@ export const testimonials: Testimonial[] = [
   {
     id: 't1',
     quote:
-      'I moved to Copenhagen not knowing a soul. Three months of Meet & Talk later, these are my closest friends.',
+      'I moved to Copenhagen not knowing a soul. A few months of Meet & Talk later, these are my closest friends.',
     name: 'Ana',
     role: 'Member since 2024',
     cityId: 'copenhagen',
@@ -13,29 +13,11 @@ export const testimonials: Testimonial[] = [
   {
     id: 't2',
     quote:
-      'My English went from shy to confident, and I got a spritz out of every lesson. Unbeatable.',
+      'My English went from shy to confident, and I got a spritz out of every lesson. This is where Meet & Talk started for me.',
     name: 'Giulia',
-    role: 'Verona regular',
-    cityId: 'verona',
+    role: 'Trento regular',
+    cityId: 'trento',
     avatar: '/images/people/camille.svg',
-  },
-  {
-    id: 't3',
-    quote:
-      'As a bar owner, Tuesday used to be dead. Now it\u2019s one of our best nights and the vibe is contagious.',
-    name: 'Thomas',
-    role: 'Venue partner, Berlin',
-    cityId: 'berlin',
-    avatar: '/images/people/noah.svg',
-  },
-  {
-    id: 't4',
-    quote:
-      'It feels less like a language class and more like being welcomed into a big, messy, wonderful family.',
-    name: 'Marc',
-    role: 'Barcelona member',
-    cityId: 'barcelona',
-    avatar: '/images/people/diego.svg',
   },
 ]
 
@@ -62,7 +44,7 @@ export const faqs: FaqItem[] = [
     id: 'f4',
     question: 'What if there is no Meet & Talk in my city?',
     answer:
-      'Request your city and we\u2019ll gauge interest. If enough people want it, we\u2019ll help you find a venue and launch your own.',
+      'Check our planned cities — you can join the WhatsApp waitlist to stay updated. Or request your city and we\u2019ll gauge interest together.',
   },
   {
     id: 'f5',
@@ -74,6 +56,6 @@ export const faqs: FaqItem[] = [
     id: 'f6',
     question: 'Is Meet & Talk only about languages?',
     answer:
-      'Language exchange is where we started, but the community is growing into startups, travel, books, tech and more. Every meetup is built around a shared interest.',
+      'Right now we focus on language exchange — it\u2019s what we do best. More topics like startups, travel and books are on the horizon as the community grows.',
   },
 ]

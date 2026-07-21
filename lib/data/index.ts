@@ -47,6 +47,14 @@ export function getEvent(idOrSlug: string): MeetEvent | undefined {
 
 /* ---------- collections ---------- */
 
+export function getLiveCities(): City[] {
+  return cities.filter((c) => c.status === 'live')
+}
+
+export function getPlannedCities(): City[] {
+  return cities.filter((c) => c.status === 'planned')
+}
+
 export function getSortedEvents(): MeetEvent[] {
   return [...events].sort((a, b) => a.date.localeCompare(b.date))
 }

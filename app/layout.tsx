@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     'social events',
     'practice languages',
     'Copenhagen',
-    'Verona',
+    'Trento',
     'Berlin',
     'Barcelona',
   ],
