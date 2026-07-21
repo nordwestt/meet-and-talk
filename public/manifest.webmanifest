@@ -1,0 +1,16 @@
+{
+  "name": "Meet & Talk",
+  "short_name": "Meet & Talk",
+  "description": "Meet people. Practice languages. Discover cities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f3e7",
+  "theme_color": "#3f9142",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
