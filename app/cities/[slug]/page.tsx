@@ -7,6 +7,7 @@ import { OrganiserCard } from '@/components/cards/organiser-card'
 import { TopicIcon } from '@/components/icons/topic-icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { PressCallout } from '@/components/press-mention-card'
 import { SocialLinks } from '@/components/social-links'
 import { WhatsappJoin } from '@/components/whatsapp-join'
 import {
@@ -15,6 +16,7 @@ import {
   getCity,
   getEventsByCity,
   getOrganisers,
+  getPressByCity,
   getTopic,
 } from '@/lib/data'
 
@@ -50,6 +52,7 @@ export default async function CityDetailPage({
   const organisers = getOrganisers(city.organiserIds)
   const topics = city.topicIds.map(getTopic).filter(Boolean)
   const whatsapp = city.social.find((s) => s.platform === 'whatsapp')
+  const press = getPressByCity(city.id)
 
   return (
     <>
@@ -96,6 +99,7 @@ export default async function CityDetailPage({
                   </a>
                 </Button>
               ) : null}
+              {press[0] ? <PressCallout item={press[0]} /> : null}
             </div>
 
             <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border-2 border-border shadow-[8px_8px_0_0_hsl(var(--primary))]">

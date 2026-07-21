@@ -129,3 +129,15 @@ export type FaqItem = {
   question: string
   answer: string
 }
+
+export type PressMention = {
+  id: string
+  title: string
+  excerpt: string
+  url: string
+  outlet: string
+  author?: string
+  /** ISO date or display string */
+  date?: string
+  cityId?: string
+}

@@ -32,6 +32,13 @@ export const en = {
   'testimonials.eyebrow': 'Community',
   'testimonials.title': 'People, not profiles',
 
+  'press.eyebrow': 'In the press',
+  'press.title': 'Real community, real stories',
+  'press.subtitle':
+    'Local media have already noticed what\u2019s happening at our tables.',
+  'press.readArticle': 'Read the article',
+  'press.inThePress': 'In the press',
+
   'hero.badge': 'Come as you are. Meet someone new.',
   'hero.title': 'Meet people. Practice languages. Discover your city.',
   'hero.subtitle':

@@ -17,6 +17,7 @@ export { organisers } from './organisers'
 export { topics } from './topics'
 export { venues } from './venues'
 export { testimonials, faqs } from './community'
+export { pressMentions, getPressByCity } from './press'
 export { siteConfig, mainNav } from './site'
 
 /* ---------- lookups ---------- */

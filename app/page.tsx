@@ -5,6 +5,7 @@ import { Hero } from '@/components/home/hero'
 import { HowItWorks } from '@/components/home/how-it-works'
 import { InstagramSection } from '@/components/home/instagram-section'
 import { NewsletterSection } from '@/components/home/newsletter-section'
+import { PressSection } from '@/components/home/press-section'
 import { Testimonials } from '@/components/home/testimonials'
 import { TopicsSection } from '@/components/home/topics-section'
 import { UpcomingEvents } from '@/components/home/upcoming-events'
@@ -19,6 +20,7 @@ export default function HomePage() {
       <TopicsSection />
       <UpcomingEvents />
       <VenueInvitation />
+      <PressSection />
       <Testimonials />
       <InstagramSection />
       <FaqSection />

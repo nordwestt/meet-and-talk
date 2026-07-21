@@ -9,7 +9,7 @@ import { useI18n } from '@/lib/i18n/context'
 
 export function Hero() {
   const { t } = useI18n()
-  const liveCities = cities.length
+  const liveCities = cities.filter(x=>x.status == 'live').length
 
   return (
     <section className="relative overflow-hidden border-b border-border bg-grain">
