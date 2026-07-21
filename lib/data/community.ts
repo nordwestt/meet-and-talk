@@ -4,10 +4,10 @@ export const testimonials: Testimonial[] = [
   {
     id: 't1',
     quote:
-      'I moved to Copenhagen not knowing a soul. A few months of Meet & Talk later, these are my closest friends.',
-    name: 'Ana',
-    role: 'Member since 2024',
-    cityId: 'copenhagen',
+      'I moved to Trento not knowing a soul. A few months of Meet & Talk later, these are my closest friends.',
+    name: 'Thomas',
+    role: 'Expat',
+    cityId: 'trento',
     avatar: '/images/people/sofia.svg',
   },
   {
