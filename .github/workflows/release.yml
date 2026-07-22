@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Package release bundle
+        run: |
+          VERSION="${{ github.event.release.tag_name || github.ref_name }}"
+          BUNDLE_DIR="meet-and-talk-${VERSION}"
+
+          mkdir -p "${BUNDLE_DIR}/.next"
+          cp -r .next/standalone/. "${BUNDLE_DIR}/"
+          cp -r .next/static "${BUNDLE_DIR}/.next/static"
+          cp -r public "${BUNDLE_DIR}/public"
+          cp Caddyfile ecosystem.config.cjs "${BUNDLE_DIR}/"
+
+          cd "${BUNDLE_DIR}"
+          zip -r "../meet-and-talk-${VERSION}.zip" .
+          cd ..
+          cp "meet-and-talk-${VERSION}.zip" meet-and-talk.zip
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Upload release asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            meet-and-talk-${{ env.VERSION }}.zip
+            meet-and-talk.zip
+
+      - name: Upload workflow artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: meet-and-talk-${{ env.VERSION }}
+          path: meet-and-talk-${{ env.VERSION }}.zip
+          retention-days: 7
