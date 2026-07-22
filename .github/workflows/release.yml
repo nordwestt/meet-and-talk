@@ -14,31 +14,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build
-        run: pnpm build
+        run: npm run build
 
       - name: Package release bundle
         run: |
           VERSION="${{ github.event.release.tag_name || github.ref_name }}"
           BUNDLE_DIR="meet-and-talk-${VERSION}"
 
-          mkdir -p "${BUNDLE_DIR}/.next"
-          cp -r .next/standalone/. "${BUNDLE_DIR}/"
-          cp -r .next/static "${BUNDLE_DIR}/.next/static"
-          cp -r public "${BUNDLE_DIR}/public"
-          cp Caddyfile ecosystem.config.cjs "${BUNDLE_DIR}/"
+          chmod +x scripts/package-release.sh
+          scripts/package-release.sh "${BUNDLE_DIR}"
 
           cd "${BUNDLE_DIR}"
           zip -r "../meet-and-talk-${VERSION}.zip" .
