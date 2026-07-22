@@ -3,6 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUNDLE_DIR="${1:?usage: package-release.sh <output-dir>}"
+if [[ "${BUNDLE_DIR}" != /* ]]; then
+  BUNDLE_DIR="${ROOT}/${BUNDLE_DIR}"
+fi
 
 rm -rf "${BUNDLE_DIR}"
 mkdir -p "${BUNDLE_DIR}"
@@ -31,7 +34,9 @@ cp "${ROOT}/Caddyfile" "${ROOT}/ecosystem.config.cjs" "${ROOT}/scripts/check-dep
 chmod +x "${BUNDLE_DIR}/check-deploy.sh"
 
 node -e "
-  require('${BUNDLE_DIR}/node_modules/next/dist/shared/lib/constants.js');
-  require('${BUNDLE_DIR}/node_modules/@swc/helpers/_/_interop_require_default');
+  const path = require('path');
+  const bundleDir = process.argv[1];
+  require(path.join(bundleDir, 'node_modules/next/dist/shared/lib/constants.js'));
+  require(path.join(bundleDir, 'node_modules/@swc/helpers/_/_interop_require_default'));
   console.log('Release bundle checks passed');
-"
+" "${BUNDLE_DIR}"
