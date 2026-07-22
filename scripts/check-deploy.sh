@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/server.js" ]]; then
+  cd "${SCRIPT_DIR}"
+else
+  cd "${SCRIPT_DIR}/.."
+fi
 
 echo "Checking deployment in $(pwd)..."
 

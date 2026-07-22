@@ -30,8 +30,8 @@ mkdir -p "${BUNDLE_DIR}/node_modules/next/node_modules/@swc"
 rm -rf "${BUNDLE_DIR}/node_modules/next/node_modules/@swc/helpers"
 cp -a "${SWC_HELPERS_SRC}" "${BUNDLE_DIR}/node_modules/next/node_modules/@swc/helpers"
 
-cp "${ROOT}/Caddyfile" "${ROOT}/ecosystem.config.cjs" "${ROOT}/scripts/check-deploy.sh" "${BUNDLE_DIR}/"
-chmod +x "${BUNDLE_DIR}/check-deploy.sh"
+cp "${ROOT}/Caddyfile" "${ROOT}/ecosystem.config.cjs" "${ROOT}/scripts/check-deploy.sh" "${ROOT}/scripts/deploy.sh" "${BUNDLE_DIR}/"
+chmod +x "${BUNDLE_DIR}/check-deploy.sh" "${BUNDLE_DIR}/deploy.sh"
 
 node -e "
   const path = require('path');
