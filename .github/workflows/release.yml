@@ -1,18 +1,25 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [release]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "TAG=v${VERSION}" >> "$GITHUB_ENV"
 
       - uses: actions/setup-node@v4
         with:
@@ -27,30 +34,23 @@ jobs:
 
       - name: Package release bundle
         run: |
-          VERSION="${{ github.event.release.tag_name || github.ref_name }}"
-          BUNDLE_DIR="meet-and-talk-${VERSION}"
+          BUNDLE_DIR="meet-and-talk-${TAG}"
 
           chmod +x scripts/package-release.sh
           scripts/package-release.sh "${BUNDLE_DIR}"
 
           cd "${BUNDLE_DIR}"
-          zip -r "../meet-and-talk-${VERSION}.zip" .
+          zip -r "../meet-and-talk-${TAG}.zip" .
           cd ..
-          cp "meet-and-talk-${VERSION}.zip" meet-and-talk.zip
-          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          cp "meet-and-talk-${TAG}.zip" meet-and-talk.zip
 
-      - name: Upload release asset
-        if: github.event_name == 'release'
+      - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG }}
+          name: ${{ env.TAG }}
           files: |
-            meet-and-talk-${{ env.VERSION }}.zip
+            meet-and-talk-${{ env.TAG }}.zip
             meet-and-talk.zip
-
-      - name: Upload workflow artifact
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: meet-and-talk-${{ env.VERSION }}
-          path: meet-and-talk-${{ env.VERSION }}.zip
-          retention-days: 7
+          make_latest: true
+          generate_release_notes: true

@@ -13,12 +13,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Releases
 
-Publishing a GitHub release builds the app in CI and attaches a ready-to-run zip.
+Push to the `release` branch to build and publish a GitHub release automatically.
 
-1. Create and push a tag, e.g. `v0.3.0`
-2. Open **Releases → Draft a new release**, pick the tag, and publish
+1. Bump `version` in `package.json`
+2. Push or merge to `release`
 
-CI uploads `meet-and-talk-<tag>.zip` and `meet-and-talk.zip` (latest alias).
+CI reads the version (e.g. `0.3.0`), creates tag `v0.3.0`, and uploads `meet-and-talk-v0.3.0.zip` plus `meet-and-talk.zip` (latest alias).
+
+You can also trigger a release manually from **Actions → Release → Run workflow**.
 
 ## VPS deployment (Caddy + PM2)
 
