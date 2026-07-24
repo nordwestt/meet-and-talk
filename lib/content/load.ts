@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { createClient } from '@libsql/client'
 import { unstable_cache } from 'next/cache'
 import { cities } from '@/lib/data/cities'
@@ -32,14 +34,15 @@ function staticBundle(): ContentBundle {
   }
 }
 
-function hasTursoConfig(): boolean {
-  return Boolean(process.env.TURSO_DATABASE_URL)
+/** Same default DB the Go admin API uses when TURSO_DATABASE_URL is unset. */
+function resolveDatabaseUrl(): string | null {
+  if (process.env.TURSO_DATABASE_URL) return process.env.TURSO_DATABASE_URL
+  const localPath = join(process.cwd(), 'content', 'local.db')
+  if (existsSync(localPath)) return `file:${localPath}`
+  return null
 }
 
-async function loadFromTurso(): Promise<ContentBundle> {
-  const url = process.env.TURSO_DATABASE_URL
-  if (!url) return staticBundle()
-
+async function loadFromDatabase(url: string): Promise<ContentBundle> {
   const client = createClient({
     url,
     authToken: process.env.TURSO_AUTH_TOKEN || undefined,
@@ -52,16 +55,22 @@ async function loadFromTurso(): Promise<ContentBundle> {
 }
 
 /**
- * Content for the site. When `TURSO_DATABASE_URL` is set, reads Turso and
- * caches for `CONTENT_REVALIDATE_SECONDS` (default 60). Otherwise uses the
- * generated `lib/data` modules (no redeploy-free updates).
+ * Content for the site.
+ * 1. `TURSO_DATABASE_URL` if set (remote Turso / sqld)
+ * 2. else `content/local.db` if present (matches Go API default)
+ * 3. else generated `lib/data` modules
  */
 export async function getContentBundle(): Promise<ContentBundle> {
-  if (!hasTursoConfig()) return staticBundle()
+  const url = resolveDatabaseUrl()
+  if (!url) return staticBundle()
 
-  const cached = unstable_cache(loadFromTurso, ['content-bundle'], {
-    revalidate: revalidateSeconds(),
-    tags: ['content'],
-  })
+  const cached = unstable_cache(
+    () => loadFromDatabase(url),
+    ['content-bundle', url],
+    {
+      revalidate: revalidateSeconds(),
+      tags: ['content'],
+    },
+  )
   return cached()
 }
