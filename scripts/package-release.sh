@@ -30,8 +30,16 @@ mkdir -p "${BUNDLE_DIR}/node_modules/next/node_modules/@swc"
 rm -rf "${BUNDLE_DIR}/node_modules/next/node_modules/@swc/helpers"
 cp -a "${SWC_HELPERS_SRC}" "${BUNDLE_DIR}/node_modules/next/node_modules/@swc/helpers"
 
-cp "${ROOT}/Caddyfile" "${ROOT}/ecosystem.config.cjs" "${ROOT}/scripts/check-deploy.sh" "${ROOT}/scripts/deploy.sh" "${BUNDLE_DIR}/"
+cp "${ROOT}/Caddyfile" "${ROOT}/ecosystem.config.cjs" "${ROOT}/.env.example" "${ROOT}/scripts/check-deploy.sh" "${ROOT}/scripts/deploy.sh" "${BUNDLE_DIR}/"
 chmod +x "${BUNDLE_DIR}/check-deploy.sh" "${BUNDLE_DIR}/deploy.sh"
+
+if [[ -f "${ROOT}/api/meet-and-talk-api" ]]; then
+  cp "${ROOT}/api/meet-and-talk-api" "${BUNDLE_DIR}/meet-and-talk-api"
+  chmod +x "${BUNDLE_DIR}/meet-and-talk-api"
+else
+  echo "api/meet-and-talk-api not found — run go build before packaging" >&2
+  exit 1
+fi
 
 node -e "
   const path = require('path');

@@ -19,12 +19,16 @@ if (major < 20 || (major === 20 && minor < 9)) {
 console.log('Node version OK:', process.version)
 "
 
-for path in server.js ecosystem.config.cjs .next/static public node_modules/@swc/helpers/_/_interop_require_default/package.json; do
+for path in server.js meet-and-talk-api ecosystem.config.cjs .next/static public node_modules/@swc/helpers/_/_interop_require_default/package.json; do
   if [[ ! -e "$path" ]]; then
     echo "Missing required path: $path" >&2
     exit 1
   fi
 done
 
-echo "Bundle looks good. Try starting manually with:"
-echo "  NODE_ENV=production PORT=3000 HOSTNAME=127.0.0.1 node server.js"
+if [[ ! -x meet-and-talk-api ]]; then
+  echo "meet-and-talk-api is not executable" >&2
+  exit 1
+fi
+
+echo "Bundle looks good."

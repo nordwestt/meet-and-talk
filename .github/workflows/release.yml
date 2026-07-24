@@ -35,6 +35,15 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: npm run build
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: api/go.mod
+          cache-dependency-path: api/go.sum
+
+      - name: Build admin API
+        working-directory: api
+        run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o meet-and-talk-api ./cmd/server
+
       - name: Package release bundle
         run: |
           BUNDLE_DIR="meet-and-talk-${TAG}"
