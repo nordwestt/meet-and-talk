@@ -45,6 +45,10 @@ yarn-error.log*
 .env*.local
 .env
 
+# content tooling
+content/local.db
+content/local.db-*
+
 # vercel
 .vercel
 

@@ -1,10 +1,8 @@
 /**
  * Core domain model for Meet & Talk.
  *
- * Everything the platform renders is described by these configurable
- * entities. Today they are populated from typed config modules in
- * `lib/data`, but the shapes are designed to map cleanly onto database
- * rows and an admin CMS later — without changing any UI code.
+ * Shapes map to Turso/libSQL rows (see `content/schema.sql`). Edit content in
+ * the database, then run `npm run content:generate` to refresh `lib/data`.
  */
 
 export type SocialPlatform =
