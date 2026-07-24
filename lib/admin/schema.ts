@@ -9,6 +9,7 @@ export type FieldType =
   | 'date'
   | 'time'
   | 'lines' // newline-separated strings (gallery)
+  | 'languages' // searchable multi-select {code,label}[]
   | 'social' // SocialLink[] editor
   | 'json' // advanced JSON blob (legacy / rare)
 
@@ -157,12 +158,7 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
       { key: 'going', label: 'Going', type: 'number' },
       { key: 'price', label: 'Price', type: 'text' },
       { key: 'image', label: 'Cover photo', type: 'image' },
-      {
-        key: 'languages',
-        label: 'Languages',
-        type: 'lines',
-        hint: 'One per line: en|English',
-      },
+      { key: 'languages', label: 'Languages', type: 'languages' },
       { key: 'social', label: 'Social links', type: 'social' },
     ],
   },
@@ -266,7 +262,7 @@ export function emptyRecord(resource: ResourceId): Record<string, unknown> {
   const record: Record<string, unknown> = {}
   for (const field of schema.fields) {
     if (field.type === 'lines') record[field.key] = []
-    else if (field.type === 'social') record[field.key] = []
+    else if (field.type === 'social' || field.type === 'languages') record[field.key] = []
     else if (field.type === 'json') record[field.key] = null
     else if (field.type === 'number') record[field.key] = null
     else if (field.key === 'status' && field.options?.[0]) record[field.key] = field.options[0].value
@@ -290,6 +286,68 @@ export const SOCIAL_PLATFORMS = [
   { value: 'website', label: 'Website' },
   { value: 'email', label: 'Email' },
 ] as const
+
+/** Common meetup languages (ISO 639-1 code + English label). */
+export const LANGUAGE_OPTIONS: { code: string; label: string }[] = [
+  { code: 'en', label: 'English' },
+  { code: 'da', label: 'Danish' },
+  { code: 'it', label: 'Italian' },
+  { code: 'de', label: 'German' },
+  { code: 'fr', label: 'French' },
+  { code: 'es', label: 'Spanish' },
+  { code: 'pt', label: 'Portuguese' },
+  { code: 'nl', label: 'Dutch' },
+  { code: 'sv', label: 'Swedish' },
+  { code: 'no', label: 'Norwegian' },
+  { code: 'fi', label: 'Finnish' },
+  { code: 'pl', label: 'Polish' },
+  { code: 'cs', label: 'Czech' },
+  { code: 'sk', label: 'Slovak' },
+  { code: 'hu', label: 'Hungarian' },
+  { code: 'ro', label: 'Romanian' },
+  { code: 'bg', label: 'Bulgarian' },
+  { code: 'hr', label: 'Croatian' },
+  { code: 'sr', label: 'Serbian' },
+  { code: 'sl', label: 'Slovenian' },
+  { code: 'el', label: 'Greek' },
+  { code: 'tr', label: 'Turkish' },
+  { code: 'ru', label: 'Russian' },
+  { code: 'uk', label: 'Ukrainian' },
+  { code: 'ar', label: 'Arabic' },
+  { code: 'he', label: 'Hebrew' },
+  { code: 'zh', label: 'Chinese' },
+  { code: 'ja', label: 'Japanese' },
+  { code: 'ko', label: 'Korean' },
+  { code: 'hi', label: 'Hindi' },
+  { code: 'th', label: 'Thai' },
+  { code: 'vi', label: 'Vietnamese' },
+  { code: 'id', label: 'Indonesian' },
+  { code: 'ms', label: 'Malay' },
+  { code: 'tl', label: 'Filipino' },
+  { code: 'ca', label: 'Catalan' },
+  { code: 'eu', label: 'Basque' },
+  { code: 'gl', label: 'Galician' },
+  { code: 'is', label: 'Icelandic' },
+  { code: 'ga', label: 'Irish' },
+  { code: 'cy', label: 'Welsh' },
+  { code: 'mt', label: 'Maltese' },
+  { code: 'sq', label: 'Albanian' },
+  { code: 'mk', label: 'Macedonian' },
+  { code: 'lt', label: 'Lithuanian' },
+  { code: 'lv', label: 'Latvian' },
+  { code: 'et', label: 'Estonian' },
+  { code: 'fa', label: 'Persian' },
+  { code: 'ur', label: 'Urdu' },
+  { code: 'bn', label: 'Bengali' },
+  { code: 'sw', label: 'Swahili' },
+  { code: 'am', label: 'Amharic' },
+  { code: 'yo', label: 'Yoruba' },
+  { code: 'zu', label: 'Zulu' },
+  { code: 'af', label: 'Afrikaans' },
+  { code: 'la', label: 'Latin' },
+  { code: 'eo', label: 'Esperanto' },
+  { code: 'sign', label: 'Sign language' },
+]
 
 
 export function linesToValue(key: string, text: string): unknown {

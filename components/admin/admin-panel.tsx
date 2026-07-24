@@ -32,6 +32,7 @@ import {
   parseJsonText,
   RESOURCE_SCHEMAS,
   slugify,
+  LANGUAGE_OPTIONS,
   SOCIAL_PLATFORMS,
   uniqueSlug,
   valueToJsonText,
@@ -498,6 +499,122 @@ type SocialRow = {
   handle?: string
 }
 
+type LangRow = { code: string; label: string }
+
+function asLanguageRows(value: unknown): LangRow[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')
+    .map((item) => ({
+      code: String(item.code ?? ''),
+      label: String(item.label ?? item.code ?? ''),
+    }))
+    .filter((item) => item.code)
+}
+
+function LanguagePicker({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: unknown
+  onChange: (value: unknown) => void
+}) {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const selected = asLanguageRows(value)
+  const selectedCodes = new Set(selected.map((l) => l.code))
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return LANGUAGE_OPTIONS.filter((opt) => {
+      if (selectedCodes.has(opt.code)) return false
+      if (!q) return true
+      return (
+        opt.label.toLowerCase().includes(q) ||
+        opt.code.toLowerCase().includes(q)
+      )
+    }).slice(0, 12)
+  }, [query, selectedCodes])
+
+  const add = (opt: { code: string; label: string }) => {
+    if (selectedCodes.has(opt.code)) return
+    onChange([...selected, { code: opt.code, label: opt.label }])
+    setQuery('')
+    setOpen(false)
+  }
+
+  const remove = (code: string) => {
+    onChange(selected.filter((l) => l.code !== code))
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Label>{label}</Label>
+      {selected.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {selected.map((lang) => (
+            <button
+              key={lang.code}
+              type="button"
+              onClick={() => remove(lang.code)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-sm hover:bg-muted"
+              title="Remove"
+            >
+              <span>{lang.label}</span>
+              <span className="text-xs text-muted-foreground">{lang.code}</span>
+              <span className="text-muted-foreground" aria-hidden>
+                ×
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">No languages selected yet.</p>
+      )}
+
+      <div className="relative">
+        <Input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => {
+            // Allow click on option before closing
+            window.setTimeout(() => setOpen(false), 150)
+          }}
+          placeholder="Search languages to add…"
+          autoComplete="off"
+        />
+        {open ? (
+          <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-lg">
+            {filtered.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-muted-foreground">No matches</li>
+            ) : (
+              filtered.map((opt) => (
+                <li key={opt.code}>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => add(opt)}
+                  >
+                    <span>{opt.label}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{opt.code}</span>
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function asSocialRows(value: unknown): SocialRow[] {
   if (!Array.isArray(value)) return []
   return value
@@ -770,6 +887,16 @@ function FieldControl({
           ))}
         </select>
       </div>
+    )
+  }
+
+  if (field.type === 'languages') {
+    return (
+      <LanguagePicker
+        label={field.label}
+        value={value}
+        onChange={onChange}
+      />
     )
   }
 
