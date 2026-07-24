@@ -46,7 +46,9 @@ function loadEnvFile(path: string) {
 }
 
 function resolveDbUrl(): string {
-  return process.env.TURSO_DATABASE_URL ?? `file:${LOCAL_DB}`
+  const remote = process.env.TURSO_DATABASE_URL?.trim()
+  if (remote) return remote
+  return `file:${LOCAL_DB}`
 }
 
 function connect(): Client {

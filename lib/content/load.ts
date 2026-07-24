@@ -36,7 +36,8 @@ function staticBundle(): ContentBundle {
 
 /** Same default DB the Go admin API uses when TURSO_DATABASE_URL is unset. */
 function resolveDatabaseUrl(): string | null {
-  if (process.env.TURSO_DATABASE_URL) return process.env.TURSO_DATABASE_URL
+  const remote = process.env.TURSO_DATABASE_URL?.trim()
+  if (remote) return remote
   const localPath = join(process.cwd(), 'content', 'local.db')
   if (existsSync(localPath)) return `file:${localPath}`
   return null
