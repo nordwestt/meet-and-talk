@@ -36,6 +36,8 @@ All routes except `GET /v1/health` require:
 Authorization: Bearer <ADMIN_API_TOKEN>
 ```
 
+A simple browser UI lives at **`/admin-panel`** on the Next.js site (paste the same token there).
+
 ## Resources
 
 | Resource | Table |

@@ -5,85 +5,52 @@ lives in **Turso**. The running Next.js app reads Turso on the server and caches
 result briefly — **no rebuild or redeploy** after you edit rows.
 
 ```
-SQL client  →  Turso  →  Next.js (cached ~60s)  →  browser
+Go admin API /admin-panel / SQL  →  Turso  →  Next.js (cached ~60s)  →  browser
 ```
 
+**Ways to edit**
+
+1. Browser UI at [`/admin-panel`](../app/admin-panel/page.tsx) (paste API token; not linked from the public nav)
+2. Go REST API — [`api/README.md`](../api/README.md)
+3. SQL client against the same Turso/libSQL database
+
 Generated `lib/data/*.ts` files remain as an **offline / build fallback** when
-`TURSO_DATABASE_URL` is not set on the server.
+`TURSO_DATABASE_URL` is not set on the Next server.
 
 ## One-time setup
 
 1. Install the [Turso CLI](https://docs.turso.tech/cli) and sign in.
-2. Create a database:
+2. Create a database and copy [`.env.example`](../.env.example) values (`TURSO_*`, `ADMIN_API_TOKEN`, optional revalidate secrets).
+3. `npm run content:seed`
+4. Run the Go API and point Caddy at `/admin-api` + `/uploads` (see [`api/README.md`](../api/README.md)).
 
-   ```bash
-   turso db create meet-and-talk
-   turso db show meet-and-talk --url
-   turso db tokens create meet-and-talk
-   ```
+## Admin panel
 
-3. Copy [`.env.example`](../.env.example) to `.env.local` (and on the VPS, into the
-   PM2 / process env):
+Open `/admin-panel`, set:
 
-   - `TURSO_DATABASE_URL`
-   - `TURSO_AUTH_TOKEN`
-   - Optional: `CONTENT_REVALIDATE_SECONDS` (default `60`)
-   - Optional: `CONTENT_REVALIDATE_SECRET` for instant cache bust
+- **API base URL** — `http://127.0.0.1:3080` locally, or `/admin-api` in production
+- **Admin API token** — same as `ADMIN_API_TOKEN`
 
-4. Apply schema + seed once:
+Token is stored in `localStorage` on that browser only. Page is `noindex`.
 
-   ```bash
-   npm run content:seed
-   ```
+## Day-to-day
 
-## Day-to-day editing (no redeploy)
+Edit via `/admin-panel` or the API. After writes, the Go service can call Next revalidate when configured; otherwise wait up to `CONTENT_REVALIDATE_SECONDS` (default 60).
 
-1. Edit tables with Beekeeper / TablePlus / `turso db shell`.
-2. Wait up to `CONTENT_REVALIDATE_SECONDS` (default 60), then refresh the site.
+Manual bust:
 
-### Instant refresh
-
-After editing, call:
-Beekeeper
 ```bash
 curl -X POST https://your-domain/api/revalidate-content \
   -H "Authorization: Bearer $CONTENT_REVALIDATE_SECRET"
 ```
 
-That clears the content cache so the next page load hits Turso immediately.
-
 ## Optional codegen
 
-Still useful for local offline work or baking a snapshot into git:
-
 ```bash
-npm run content:generate   # DB → lib/data/*.ts
-npm run content:watch      # regenerate while editing
+npm run content:generate
+npm run content:watch
 ```
-
-`npm run build` runs generate via `prebuild` (fallback data). Production with Turso
-env vars ignores those files at runtime.
-
-## Desktop SQL clients
-
-| Client | Notes |
-|--------|--------|
-| [Beekeeper Studio](https://www.beekeeperstudio.io/) | libSQL / Turso |
-| [TablePlus](https://tableplus.com/) | libSQL / Turso driver |
-| Turso CLI | `turso db shell meet-and-talk` |
 
 ## Tables
 
-| Table | Entity |
-|-------|--------|
-| `topics` | topics |
-| `organisers` | organisers |
-| `cities` | cities |
-| `venues` | venues |
-| `events` | events |
-| `testimonials`, `faqs` | community |
-| `press_mentions` | press |
-| Junction tables | `city_organisers`, `city_topics`, `organiser_cities`, `event_organisers` |
-
-Nested fields (`social`, `gallery`, `languages`) are JSON text. Schema:
-[`content/schema.sql`](../content/schema.sql).
+See [`content/schema.sql`](../content/schema.sql). Uploaded photos use `/uploads/...` on persistent disk (Caddy), not the Next release zip.
