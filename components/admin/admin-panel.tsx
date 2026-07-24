@@ -32,6 +32,7 @@ import {
   parseJsonText,
   RESOURCE_SCHEMAS,
   slugify,
+  SOCIAL_PLATFORMS,
   uniqueSlug,
   valueToJsonText,
   valueToLines,
@@ -277,33 +278,6 @@ export function AdminPanel() {
     }
   }
 
-  const onUpload = async (file: File | null) => {
-    if (!file || !draft) return
-    const imageField = schema.imageField
-    if (!imageField) {
-      toast.error('This resource has no image field')
-      return
-    }
-    setBusy(true)
-    try {
-      const dataUrl = await readAsDataUrl(file)
-      const result = await adminFetch<{ path: string }>(settings, '/v1/uploads', {
-        method: 'POST',
-        body: JSON.stringify({
-          folder: schema.uploadFolder,
-          filename: file.name.replace(/\.[^.]+$/, ''),
-          data: dataUrl,
-        }),
-      })
-      setField(imageField, result.path)
-      toast.success(`Uploaded ${result.path}`)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Upload failed')
-    } finally {
-      setBusy(false)
-    }
-  }
-
   if (!hydrated) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center text-muted-foreground">
@@ -472,36 +446,42 @@ export function AdminPanel() {
                       field={field}
                       value={draft[field.key]}
                       related={related}
+                      busy={busy}
+                      uploadFolder={schema.uploadFolder}
+                      onUpload={
+                        field.type === 'image'
+                          ? async (file) => {
+                              if (!file) return
+                              setBusy(true)
+                              try {
+                                const dataUrl = await readAsDataUrl(file)
+                                const result = await adminFetch<{ path: string }>(
+                                  settings,
+                                  '/v1/uploads',
+                                  {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                      folder: schema.uploadFolder,
+                                      filename: file.name.replace(/\.[^.]+$/, ''),
+                                      data: dataUrl,
+                                    }),
+                                  },
+                                )
+                                setField(field.key, result.path)
+                                toast.success('Photo uploaded')
+                              } catch (err) {
+                                toast.error(
+                                  err instanceof Error ? err.message : 'Upload failed',
+                                )
+                              } finally {
+                                setBusy(false)
+                              }
+                            }
+                          : undefined
+                      }
                       onChange={(value) => setField(field.key, value)}
                     />
                   ))}
-
-                  {schema.imageField ? (
-                    <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3">
-                      <div className="mb-2 flex flex-wrap items-center gap-3">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          Upload folder: <code>{schema.uploadFolder}</code>
-                        </span>
-                        <label className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-[0.8rem] font-medium hover:bg-muted">
-                          <ImagePlus className="size-3.5" />
-                          Upload image
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp,image/gif"
-                            className="sr-only"
-                            disabled={busy}
-                            onChange={(e) => {
-                              void onUpload(e.target.files?.[0] ?? null)
-                              e.target.value = ''
-                            }}
-                          />
-                        </label>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Fills the <code>{schema.imageField}</code> field after upload.
-                      </p>
-                    </div>
-                  ) : null}
                 </div>
               )}
             </div>
@@ -512,18 +492,207 @@ export function AdminPanel() {
   )
 }
 
+type SocialRow = {
+  platform: string
+  url: string
+  handle?: string
+}
+
+function asSocialRows(value: unknown): SocialRow[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')
+    .map((item) => ({
+      platform: String(item.platform ?? 'website'),
+      url: String(item.url ?? ''),
+      handle: item.handle != null ? String(item.handle) : '',
+    }))
+}
+
 function FieldControl({
   field,
   value,
   related,
+  busy,
+  uploadFolder,
+  onUpload,
   onChange,
 }: {
   field: FieldDef
   value: unknown
   related: Partial<Record<ResourceId, Record<string, unknown>[]>>
+  busy?: boolean
+  uploadFolder?: string
+  onUpload?: (file: File | null) => void | Promise<void>
   onChange: (value: unknown) => void
 }) {
   const id = `field-${field.key}`
+
+  if (field.type === 'social') {
+    const rows = asSocialRows(value)
+    const update = (next: SocialRow[]) => {
+      onChange(
+        next.map((row) => {
+          const out: Record<string, string> = {
+            platform: row.platform,
+            url: row.url,
+          }
+          if (row.handle?.trim()) out.handle = row.handle.trim()
+          return out
+        }),
+      )
+    }
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <Label>{field.label}</Label>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() =>
+              update([...rows, { platform: 'instagram', url: '', handle: '' }])
+            }
+          >
+            <Plus className="size-3.5" />
+            Add link
+          </Button>
+        </div>
+        {rows.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+            No social links yet. Add WhatsApp, Instagram, etc.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {rows.map((row, index) => (
+              <li
+                key={`${row.platform}-${index}`}
+                className="grid gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:grid-cols-[140px_1fr_auto]"
+              >
+                <select
+                  className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
+                  value={row.platform}
+                  onChange={(e) => {
+                    const next = [...rows]
+                    next[index] = { ...row, platform: e.target.value }
+                    update(next)
+                  }}
+                  aria-label="Platform"
+                >
+                  {SOCIAL_PLATFORMS.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="grid gap-2">
+                  <Input
+                    placeholder={
+                      row.platform === 'email'
+                        ? 'mailto:hello@example.com'
+                        : 'https://…'
+                    }
+                    value={row.url}
+                    onChange={(e) => {
+                      const next = [...rows]
+                      next[index] = { ...row, url: e.target.value }
+                      update(next)
+                    }}
+                    aria-label="URL"
+                  />
+                  <Input
+                    placeholder="Display label (optional), e.g. @meetandtalk"
+                    value={row.handle ?? ''}
+                    onChange={(e) => {
+                      const next = [...rows]
+                      next[index] = { ...row, handle: e.target.value }
+                      update(next)
+                    }}
+                    aria-label="Handle"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="justify-self-end"
+                  onClick={() => update(rows.filter((_, i) => i !== index))}
+                >
+                  <Trash2 className="size-3.5" />
+                  Remove
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )
+  }
+
+  if (field.type === 'image') {
+    const path = String(value ?? '')
+    const previewSrc = path
+      ? path.startsWith('http') || path.startsWith('/')
+        ? path
+        : `/${path}`
+      : ''
+    return (
+      <div className="flex flex-col gap-2">
+        <Label>{field.label}</Label>
+        <div className="flex flex-wrap items-start gap-4 rounded-xl border border-border bg-muted/30 p-3">
+          <div className="relative size-24 shrink-0 overflow-hidden rounded-lg border border-border bg-background">
+            {previewSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={previewSrc} alt="" className="size-full object-cover" />
+            ) : (
+              <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
+                No photo
+              </div>
+            )}
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
+              Upload a photo — it will be stored and linked automatically.
+              {uploadFolder ? (
+                <>
+                  {' '}
+                  Saved under <code>{uploadFolder}</code>.
+                </>
+              ) : null}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-sm font-medium hover:bg-muted">
+                <ImagePlus className="size-3.5" />
+                {path ? 'Replace photo' : 'Choose photo'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="sr-only"
+                  disabled={busy || !onUpload}
+                  onChange={(e) => {
+                    void onUpload?.(e.target.files?.[0] ?? null)
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+              {path ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  disabled={busy}
+                  onClick={() => onChange('')}
+                >
+                  <Trash2 className="size-3.5" />
+                  Remove
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (field.type === 'textarea') {
     return (
@@ -558,7 +727,6 @@ function FieldControl({
   }
 
   if (field.type === 'date' || field.type === 'time') {
-    // Normalize stored values for native pickers (HH:MM:SS → HH:MM)
     const raw = String(value ?? '')
     const normalized =
       field.type === 'time' && /^\d{2}:\d{2}:\d{2}$/.test(raw) ? raw.slice(0, 5) : raw
@@ -642,7 +810,6 @@ function FieldControl({
     )
   }
 
-  // text + image path
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id}>{field.label}</Label>

@@ -9,7 +9,8 @@ export type FieldType =
   | 'date'
   | 'time'
   | 'lines' // newline-separated strings (gallery)
-  | 'json' // advanced JSON blob (social, languages)
+  | 'social' // SocialLink[] editor
+  | 'json' // advanced JSON blob (legacy / rare)
 
 export type FieldDef = {
   key: string
@@ -87,9 +88,9 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
       { key: 'description', label: 'Description', type: 'textarea', required: true },
       { key: 'timezone', label: 'Timezone', type: 'text' },
       { key: 'memberCount', label: 'Member count', type: 'number' },
-      { key: 'image', label: 'Image path', type: 'image' },
-      { key: 'gallery', label: 'Gallery paths', type: 'lines', hint: 'One path per line' },
-      { key: 'social', label: 'Social links (JSON)', type: 'json' },
+      { key: 'image', label: 'Cover photo', type: 'image' },
+      { key: 'gallery', label: 'Gallery photos', type: 'lines', hint: 'One image path per line (use Cover photo upload, then paste paths here if needed)' },
+      { key: 'social', label: 'Social links', type: 'social' },
     ],
   },
   venues: {
@@ -111,8 +112,8 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
       { key: 'address', label: 'Address', type: 'text', required: true },
       { key: 'description', label: 'Description', type: 'textarea' },
       { key: 'capacity', label: 'Capacity', type: 'number' },
-      { key: 'image', label: 'Image path', type: 'image' },
-      { key: 'social', label: 'Social links (JSON)', type: 'json' },
+      { key: 'image', label: 'Photo', type: 'image' },
+      { key: 'social', label: 'Social links', type: 'social' },
     ],
   },
   events: {
@@ -155,14 +156,14 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
       { key: 'capacity', label: 'Capacity', type: 'number' },
       { key: 'going', label: 'Going', type: 'number' },
       { key: 'price', label: 'Price', type: 'text' },
-      { key: 'image', label: 'Image path', type: 'image' },
+      { key: 'image', label: 'Cover photo', type: 'image' },
       {
         key: 'languages',
         label: 'Languages',
         type: 'lines',
         hint: 'One per line: en|English',
       },
-      { key: 'social', label: 'Social links (JSON)', type: 'json' },
+      { key: 'social', label: 'Social links', type: 'social' },
     ],
   },
   organisers: {
@@ -175,8 +176,8 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
       { key: 'name', label: 'Name', type: 'text', required: true, generatesIdentity: true },
       { key: 'role', label: 'Role', type: 'text' },
       { key: 'bio', label: 'Bio', type: 'textarea' },
-      { key: 'avatar', label: 'Avatar path', type: 'image' },
-      { key: 'social', label: 'Social links (JSON)', type: 'json' },
+      { key: 'avatar', label: 'Profile photo', type: 'image' },
+      { key: 'social', label: 'Social links', type: 'social' },
     ],
   },
   topics: {
@@ -233,7 +234,7 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
         optionsFrom: 'cities',
         optionsLabelKey: 'name',
       },
-      { key: 'avatar', label: 'Avatar path', type: 'image' },
+      { key: 'avatar', label: 'Profile photo', type: 'image' },
     ],
   },
   press: {
@@ -265,7 +266,8 @@ export function emptyRecord(resource: ResourceId): Record<string, unknown> {
   const record: Record<string, unknown> = {}
   for (const field of schema.fields) {
     if (field.type === 'lines') record[field.key] = []
-    else if (field.type === 'json') record[field.key] = field.key === 'social' ? [] : null
+    else if (field.type === 'social') record[field.key] = []
+    else if (field.type === 'json') record[field.key] = null
     else if (field.type === 'number') record[field.key] = null
     else if (field.key === 'status' && field.options?.[0]) record[field.key] = field.options[0].value
     else if (field.key === 'time') record[field.key] = '18:30'
@@ -277,6 +279,18 @@ export function emptyRecord(resource: ResourceId): Record<string, unknown> {
   }
   return record
 }
+
+export const SOCIAL_PLATFORMS = [
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'telegram', label: 'Telegram' },
+  { value: 'discord', label: 'Discord' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'meetup', label: 'Meetup' },
+  { value: 'website', label: 'Website' },
+  { value: 'email', label: 'Email' },
+] as const
+
 
 export function linesToValue(key: string, text: string): unknown {
   const lines = text
