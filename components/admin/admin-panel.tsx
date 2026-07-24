@@ -2,15 +2,26 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  CalendarDays,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  CircleHelp,
   Copy,
   ImagePlus,
   Loader2,
+  MapPin,
+  MessagesSquare,
+  Newspaper,
   Plus,
+  Quote,
   RefreshCw,
   Save,
+  Store,
   Trash2,
   Unplug,
+  Users,
+  type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -42,6 +53,17 @@ import {
 
 type ListResponse = { data: Record<string, unknown>[] }
 
+const RESOURCE_ICONS: Record<string, LucideIcon> = {
+  CalendarDays,
+  Store,
+  Users,
+  MapPin,
+  MessagesSquare,
+  CircleHelp,
+  Quote,
+  Newspaper,
+}
+
 function itemTitle(item: Record<string, unknown>, titleKey: string) {
   const v = item[titleKey] ?? item.id ?? 'Untitled'
   return String(v)
@@ -51,8 +73,9 @@ export function AdminPanel() {
   const [settings, setSettings] = useState<AdminSettings>({ baseUrl: '', token: '' })
   const [hydrated, setHydrated] = useState(false)
   const [connected, setConnected] = useState(false)
+  const [showConnectionDetails, setShowConnectionDetails] = useState(true)
   const [busy, setBusy] = useState(false)
-  const [resource, setResource] = useState<ResourceId>('cities')
+  const [resource, setResource] = useState<ResourceId>('events')
   const [items, setItems] = useState<Record<string, unknown>[]>([])
   const [related, setRelated] = useState<Partial<Record<ResourceId, Record<string, unknown>[]>>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -107,12 +130,14 @@ export function AdminPanel() {
       await refreshList(settings, resource)
       await loadRelated(settings)
       setConnected(true)
+      setShowConnectionDetails(false)
       setSelectedId(null)
       setIsNew(false)
       setDraft(null)
       toast.success('Connected')
     } catch (err) {
       setConnected(false)
+      setShowConnectionDetails(true)
       toast.error(err instanceof Error ? err.message : 'Connection failed')
     } finally {
       setBusy(false)
@@ -302,63 +327,113 @@ export function AdminPanel() {
         </p>
       </header>
 
-      <section className="mb-8 rounded-2xl border-2 border-border bg-card p-5 shadow-sm">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="admin-base">API base URL</Label>
-            <Input
-              id="admin-base"
-              value={settings.baseUrl}
-              onChange={(e) => persist({ ...settings, baseUrl: e.target.value })}
-              placeholder="http://127.0.0.1:3080 or /admin-api"
-              autoComplete="off"
-            />
+      <section className="mb-6 rounded-2xl border-2 border-border bg-card shadow-sm">
+        {connected && !showConnectionDetails ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <div className="flex min-w-0 items-center gap-2 text-sm">
+              <CheckCircle2 className="size-4 shrink-0 text-primary" />
+              <span className="font-medium text-primary">Connected</span>
+              <span className="truncate text-muted-foreground">{settings.baseUrl}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={connect} disabled={busy}>
+                {busy ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                Reconnect
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowConnectionDetails(true)}
+              >
+                <ChevronDown />
+                Settings
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="admin-token">Admin API token</Label>
-            <Input
-              id="admin-token"
-              type="password"
-              value={settings.token}
-              onChange={(e) => persist({ ...settings, token: e.target.value })}
-              placeholder="Bearer token value"
-              autoComplete="off"
-            />
+        ) : (
+          <div className="p-5">
+            {connected ? (
+              <button
+                type="button"
+                className="mb-4 flex w-full items-center justify-between text-left text-sm font-medium"
+                onClick={() => setShowConnectionDetails(false)}
+              >
+                <span className="inline-flex items-center gap-1.5 text-primary">
+                  <CheckCircle2 className="size-4" />
+                  Connection settings
+                </span>
+                <ChevronUp className="size-4 text-muted-foreground" />
+              </button>
+            ) : null}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="admin-base">API base URL</Label>
+                <Input
+                  id="admin-base"
+                  value={settings.baseUrl}
+                  onChange={(e) => persist({ ...settings, baseUrl: e.target.value })}
+                  placeholder="http://127.0.0.1:3080 or /admin-api"
+                  autoComplete="off"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="admin-token">Admin API token</Label>
+                <Input
+                  id="admin-token"
+                  type="password"
+                  value={settings.token}
+                  onChange={(e) => persist({ ...settings, token: e.target.value })}
+                  placeholder="Bearer token value"
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Button onClick={connect} disabled={busy || !settings.token}>
+                {busy ? (
+                  <Loader2 className="animate-spin" />
+                ) : connected ? (
+                  <RefreshCw />
+                ) : (
+                  <Unplug />
+                )}
+                {connected ? 'Reconnect' : 'Connect'}
+              </Button>
+              {connected ? (
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                  <CheckCircle2 className="size-4" />
+                  Connected
+                </span>
+              ) : (
+                <span className="text-sm text-muted-foreground">Not connected</span>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button onClick={connect} disabled={busy || !settings.token}>
-            {busy ? <Loader2 className="animate-spin" /> : connected ? <RefreshCw /> : <Unplug />}
-            {connected ? 'Reconnect' : 'Connect'}
-          </Button>
-          {connected ? (
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-              <CheckCircle2 className="size-4" />
-              Connected
-            </span>
-          ) : (
-            <span className="text-sm text-muted-foreground">Not connected</span>
-          )}
-        </div>
+        )}
       </section>
 
       {!connected ? null : (
-        <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
           <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col">
-            {RESOURCES.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => loadResource(r.id)}
-                className={`rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
-                  resource === r.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
+            {RESOURCES.map((r) => {
+              const Icon = RESOURCE_ICONS[r.icon] ?? CalendarDays
+              const active = resource === r.id
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => loadResource(r.id)}
+                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                >
+                  <Icon className="size-4 shrink-0 opacity-90" />
+                  {r.label}
+                </button>
+              )
+            })}
           </nav>
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">

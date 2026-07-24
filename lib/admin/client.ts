@@ -6,14 +6,14 @@ export type AdminSettings = {
 }
 
 export const RESOURCES = [
-  { id: 'cities', label: 'Cities', titleKey: 'name' },
-  { id: 'venues', label: 'Venues', titleKey: 'name' },
-  { id: 'events', label: 'Events', titleKey: 'title' },
-  { id: 'organisers', label: 'Organisers', titleKey: 'name' },
-  { id: 'topics', label: 'Topics', titleKey: 'name' },
-  { id: 'faqs', label: 'FAQs', titleKey: 'question' },
-  { id: 'testimonials', label: 'Testimonials', titleKey: 'name' },
-  { id: 'press', label: 'Press', titleKey: 'title' },
+  { id: 'events', label: 'Events', titleKey: 'title', icon: 'CalendarDays' },
+  { id: 'venues', label: 'Venues', titleKey: 'name', icon: 'Store' },
+  { id: 'organisers', label: 'Organisers', titleKey: 'name', icon: 'Users' },
+  { id: 'cities', label: 'Cities', titleKey: 'name', icon: 'MapPin' },
+  { id: 'topics', label: 'Topics', titleKey: 'name', icon: 'MessagesSquare' },
+  { id: 'faqs', label: 'FAQs', titleKey: 'question', icon: 'CircleHelp' },
+  { id: 'testimonials', label: 'Testimonials', titleKey: 'name', icon: 'Quote' },
+  { id: 'press', label: 'Press', titleKey: 'title', icon: 'Newspaper' },
 ] as const
 
 export type ResourceId = (typeof RESOURCES)[number]['id']
