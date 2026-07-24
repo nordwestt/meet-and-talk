@@ -3,11 +3,12 @@
 import Image from 'next/image'
 import { Quote } from 'lucide-react'
 import { SectionHeading } from '@/components/section-heading'
-import { getCity, testimonials } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export function Testimonials() {
   const { t } = useI18n()
+  const { getCity, testimonials } = useContent()
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">

@@ -5,13 +5,14 @@ import { VenueCard } from '@/components/cards/venue-card'
 import { RequestForm } from '@/components/forms/request-form'
 import { PageHero } from '@/components/page-hero'
 import { SectionHeading } from '@/components/section-heading'
-import { venues } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 const benefitIcons = [TrendingUp, Users, Zap, Store]
 
 export default function VenuesPage() {
   const { t } = useI18n()
+  const { venues } = useContent()
 
   const benefits = [1, 2, 3, 4].map((n, i) => ({
     icon: benefitIcons[i],

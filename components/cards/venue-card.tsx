@@ -1,9 +1,12 @@
+'use client'
+
 import Image from 'next/image'
 import { MapPin, Users } from 'lucide-react'
-import { getCity } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import type { Venue } from '@/lib/types'
 
 export function VenueCard({ venue }: { venue: Venue }) {
+  const { getCity } = useContent()
   const city = getCity(venue.cityId)
 
   return (

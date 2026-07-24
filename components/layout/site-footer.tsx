@@ -3,11 +3,13 @@
 import { MessagesSquare } from 'lucide-react'
 import Link from 'next/link'
 import { SocialLinks } from '@/components/social-links'
-import { cities, siteConfig, topics } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
+import { siteConfig } from '@/lib/data'
 import { useI18n } from '@/lib/i18n/context'
 
 export function SiteFooter() {
   const { t } = useI18n()
+  const { cities, topics } = useContent()
   const year = new Date().getFullYear()
 
   return (

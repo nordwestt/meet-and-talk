@@ -5,8 +5,13 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { ContentProvider } from '@/lib/content/context'
+import { getContentBundle } from '@/lib/content/load'
 import { I18nProvider } from '@/lib/i18n/context'
 import './globals.css'
+
+/** Refresh Turso-backed content without rebuilding (seconds). */
+export const revalidate = 60
 
 const display = Bricolage_Grotesque({
   subsets: ['latin'],
@@ -56,11 +61,13 @@ export const viewport: Viewport = {
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const bundle = await getContentBundle()
+
   return (
     <html
       lang="en"
@@ -75,12 +82,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <I18nProvider>
-            <div className="flex min-h-screen flex-col">
-              <SiteHeader />
-              <main className="flex-1">{children}</main>
-              <SiteFooter />
-            </div>
-            <Toaster position="top-center" />
+            <ContentProvider bundle={bundle}>
+              <div className="flex min-h-screen flex-col">
+                <SiteHeader />
+                <main className="flex-1">{children}</main>
+                <SiteFooter />
+              </div>
+              <Toaster position="top-center" />
+            </ContentProvider>
           </I18nProvider>
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}

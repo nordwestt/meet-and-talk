@@ -2,11 +2,12 @@
 
 import { TopicCard } from '@/components/cards/topic-card'
 import { PageHero } from '@/components/page-hero'
-import { topics } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export default function TopicsPage() {
   const { t } = useI18n()
+  const { topics } = useContent()
   const live = topics.filter((topic) => topic.status === 'live')
   const soon = topics.filter((topic) => topic.status === 'soon')
 

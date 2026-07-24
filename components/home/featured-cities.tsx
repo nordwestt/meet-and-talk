@@ -5,11 +5,12 @@ import { ArrowRight } from 'lucide-react'
 import { CityCard } from '@/components/cards/city-card'
 import { SectionHeading } from '@/components/section-heading'
 import { Button } from '@/components/ui/button'
-import { cities } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export function FeaturedCities() {
   const { t } = useI18n()
+  const { cities } = useContent()
   const featured = cities.slice(0, 6)
 
   return (

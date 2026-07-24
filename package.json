@@ -1,15 +1,20 @@
 {
   "name": "meet-and-talk",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsx scripts/generate-content.ts generate",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "content:generate": "tsx scripts/generate-content.ts generate",
+    "content:watch": "tsx scripts/generate-content.ts watch",
+    "content:seed": "tsx scripts/generate-content.ts seed"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
+    "@libsql/client": "^0.15.15",
     "@vercel/analytics": "1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -31,6 +36,7 @@
     "@types/react-dom": "^19",
     "postcss": "^8.5",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.20.5",
     "typescript": "5.7.3"
   }
 }

@@ -11,6 +11,18 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Updating cities, events, etc.
+
+Content lives in Turso. Edit via the **Go admin API** (`/admin-api`, see [api/README.md](api/README.md)),
+the browser UI at [`/admin-panel`](/admin-panel), or a SQL client. With `TURSO_DATABASE_URL` on the
+Next server, edits show up on the next request (cached ~60s) — no rebuild.
+Details: [docs/CONTENT.md](docs/CONTENT.md).
+
+```bash
+npm run content:seed       # first time: schema + seed
+# POST/PATCH https://…/admin-api/v1/cities  (Bearer ADMIN_API_TOKEN)
+```
+
 ## Releases
 
 Push to the `release` branch to build and publish a GitHub release automatically.

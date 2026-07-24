@@ -12,17 +12,12 @@ import {
 import { OrganiserCard } from '@/components/cards/organiser-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  events,
-  formatEventDate,
-  getCity,
-  getEvent,
-  getOrganisers,
-  getTopic,
-  getVenue,
-} from '@/lib/data'
+import { getContentBundle } from '@/lib/content/load'
+import { createLookups } from '@/lib/content/lookups'
+import { formatEventDate } from '@/lib/data'
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const { events } = await getContentBundle()
   return events.map((event) => ({ slug: event.slug }))
 }
 
@@ -32,6 +27,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const { getEvent } = createLookups(await getContentBundle())
   const event = getEvent(slug)
   if (!event) return {}
   return {
@@ -46,6 +42,9 @@ export default async function EventDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const { getCity, getEvent, getOrganisers, getTopic, getVenue } = createLookups(
+    await getContentBundle(),
+  )
   const event = getEvent(slug)
   if (!event) notFound()
 
