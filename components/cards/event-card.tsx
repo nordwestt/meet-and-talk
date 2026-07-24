@@ -4,17 +4,14 @@ import { CalendarDays, Clock, MapPin, Repeat, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import {
-  formatEventDate,
-  getCity,
-  getTopic,
-  getVenue,
-} from '@/lib/data'
+import { useContent } from '@/lib/content/context'
+import { formatEventDate } from '@/lib/data'
 import { useI18n } from '@/lib/i18n/context'
 import type { MeetEvent } from '@/lib/types'
 
 export function EventCard({ event }: { event: MeetEvent }) {
   const { t } = useI18n()
+  const { getCity, getTopic, getVenue } = useContent()
   const city = getCity(event.cityId)
   const venue = getVenue(event.venueId)
   const topic = getTopic(event.topicId)

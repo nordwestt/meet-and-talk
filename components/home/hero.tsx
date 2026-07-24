@@ -4,12 +4,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, MapPin, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cities } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export function Hero() {
   const { t } = useI18n()
-  const liveCities = cities.filter(x=>x.status == 'live').length
+  const { cities } = useContent()
+  const liveCities = cities.filter((x) => x.status === 'live').length
 
   return (
     <section className="relative overflow-hidden border-b border-border bg-grain">

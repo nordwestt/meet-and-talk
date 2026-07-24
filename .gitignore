@@ -45,6 +45,14 @@ yarn-error.log*
 .env*.local
 .env
 
+# content tooling
+content/local.db
+content/local.db-*
+
+# go admin api
+api/.uploads/
+api/meet-and-talk-api
+
 # vercel
 .vercel
 

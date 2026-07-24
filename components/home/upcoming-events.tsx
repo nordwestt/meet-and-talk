@@ -5,11 +5,12 @@ import { ArrowRight } from 'lucide-react'
 import { EventCard } from '@/components/cards/event-card'
 import { SectionHeading } from '@/components/section-heading'
 import { Button } from '@/components/ui/button'
-import { getUpcomingEvents } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export function UpcomingEvents() {
   const { t } = useI18n()
+  const { getUpcomingEvents } = useContent()
   const events = getUpcomingEvents(6)
 
   return (

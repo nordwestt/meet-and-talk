@@ -11,11 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { cities, getSortedEvents, topics } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export default function EventsPage() {
   const { t } = useI18n()
+  const { cities, getSortedEvents, topics } = useContent()
   const [cityFilter, setCityFilter] = useState('all')
   const [topicFilter, setTopicFilter] = useState('all')
 
@@ -25,8 +26,7 @@ export default function EventsPage() {
       const topicMatch = topicFilter === 'all' || event.topicId === topicFilter
       return cityMatch && topicMatch
     })
-  }, [cityFilter, topicFilter])
-
+  }, [cityFilter, topicFilter, getSortedEvents])
   return (
     <>
       <PageHero

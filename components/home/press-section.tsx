@@ -2,11 +2,12 @@
 
 import { PressMentionCard } from '@/components/press-mention-card'
 import { SectionHeading } from '@/components/section-heading'
-import { pressMentions } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export function PressSection() {
   const { t } = useI18n()
+  const { pressMentions } = useContent()
 
   if (!pressMentions.length) return null
 

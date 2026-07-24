@@ -10,17 +10,12 @@ import { Button } from '@/components/ui/button'
 import { PressCallout } from '@/components/press-mention-card'
 import { SocialLinks } from '@/components/social-links'
 import { WhatsappJoin } from '@/components/whatsapp-join'
-import {
-  cities,
-  formatMemberCount,
-  getCity,
-  getEventsByCity,
-  getOrganisers,
-  getPressByCity,
-  getTopic,
-} from '@/lib/data'
+import { getContentBundle } from '@/lib/content/load'
+import { createLookups } from '@/lib/content/lookups'
+import { formatMemberCount } from '@/lib/data'
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const { cities } = await getContentBundle()
   return cities.map((city) => ({ slug: city.slug }))
 }
 
@@ -30,6 +25,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const { getCity } = createLookups(await getContentBundle())
   const city = getCity(slug)
   if (!city) return {}
   return {
@@ -44,6 +40,13 @@ export default async function CityDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const {
+    getCity,
+    getEventsByCity,
+    getOrganisers,
+    getPressByCity,
+    getTopic,
+  } = createLookups(await getContentBundle())
   const city = getCity(slug)
   if (!city) notFound()
 
