@@ -44,7 +44,7 @@ Generated `lib/data/*.ts` files remain as an **offline / build fallback** when
 ### Instant refresh
 
 After editing, call:
-
+Beekeeper
 ```bash
 curl -X POST https://your-domain/api/revalidate-content \
   -H "Authorization: Bearer $CONTENT_REVALIDATE_SECRET"

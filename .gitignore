@@ -49,6 +49,10 @@ yarn-error.log*
 content/local.db
 content/local.db-*
 
+# go admin api
+api/.uploads/
+api/meet-and-talk-api
+
 # vercel
 .vercel
 

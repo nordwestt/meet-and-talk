@@ -1,3 +1,16 @@
 meetandtalk.eu {
-	reverse_proxy localhost:3000
+	# Admin Go API (Bearer token). Path prefix stripped → backend sees /v1/...
+	handle_path /admin-api/* {
+		reverse_proxy localhost:3080
+	}
+
+	# Persistent uploads (outside the Next.js release zip)
+	handle_path /uploads/* {
+		root * /var/meet-and-talk/uploads
+		file_server
+	}
+
+	handle {
+		reverse_proxy localhost:3000
+	}
 }
