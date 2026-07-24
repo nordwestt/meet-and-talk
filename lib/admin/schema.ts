@@ -6,6 +6,8 @@ export type FieldType =
   | 'number'
   | 'select'
   | 'image'
+  | 'date'
+  | 'time'
   | 'lines' // newline-separated strings (gallery)
   | 'json' // advanced JSON blob (social, languages)
 
@@ -14,12 +16,13 @@ export type FieldDef = {
   label: string
   type: FieldType
   required?: boolean
+  hidden?: boolean
   options?: { value: string; label: string }[]
   /** When set, options are loaded from another resource's id + titleKey */
   optionsFrom?: ResourceId
   optionsLabelKey?: string
   hint?: string
-  /** Generate id/slug from this field when unlocked */
+  /** Generate id/slug from this field when creating/duplicating */
   generatesIdentity?: boolean
 }
 
@@ -31,8 +34,11 @@ export type ResourceSchema = {
   fields: FieldDef[]
 }
 
+/** Max length for auto-generated ids and slugs (DB TEXT, keep URLs short). */
+export const MAX_IDENTITY_LEN = 48
+
 export function slugify(input: string): string {
-  return input
+  const slug = input
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
@@ -40,14 +46,17 @@ export function slugify(input: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .replace(/-{2,}/g, '-')
+  const trimmed = slug.slice(0, MAX_IDENTITY_LEN).replace(/-+$/g, '')
+  return trimmed || 'item'
 }
 
 export function uniqueSlug(base: string, existingIds: string[], existingSlugs: string[] = []): string {
-  const root = base || 'item'
+  const root = slugify(base || 'item')
   let candidate = root
   let n = 2
   while (existingIds.includes(candidate) || existingSlugs.includes(candidate)) {
-    candidate = `${root}-${n}`
+    const suffix = `-${n}`
+    candidate = root.slice(0, Math.max(1, MAX_IDENTITY_LEN - suffix.length)) + suffix
     n += 1
   }
   return candidate
@@ -60,8 +69,8 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
     imageField: 'image',
     identityFrom: 'name',
     fields: [
-      { key: 'id', label: 'ID', type: 'text', required: true, hint: 'Auto from name unless you edit it' },
-      { key: 'slug', label: 'Slug', type: 'text', required: true, hint: 'URL path segment' },
+      { key: 'id', label: 'ID', type: 'text', required: true, hidden: true },
+      { key: 'slug', label: 'Slug', type: 'text', required: true, hidden: true },
       { key: 'name', label: 'Name', type: 'text', required: true, generatesIdentity: true },
       { key: 'country', label: 'Country', type: 'text', required: true },
       { key: 'countryFlag', label: 'Flag emoji', type: 'text', required: true },
@@ -89,7 +98,7 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
     imageField: 'image',
     identityFrom: 'name',
     fields: [
-      { key: 'id', label: 'ID', type: 'text', required: true },
+      { key: 'id', label: 'ID', type: 'text', required: true, hidden: true },
       { key: 'name', label: 'Name', type: 'text', required: true, generatesIdentity: true },
       {
         key: 'cityId',
@@ -112,8 +121,8 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
     imageField: 'image',
     identityFrom: 'title',
     fields: [
-      { key: 'id', label: 'ID', type: 'text', required: true },
-      { key: 'slug', label: 'Slug', type: 'text', required: true },
+      { key: 'id', label: 'ID', type: 'text', required: true, hidden: true },
+      { key: 'slug', label: 'Slug', type: 'text', required: true, hidden: true },
       { key: 'title', label: 'Title', type: 'text', required: true, generatesIdentity: true },
       {
         key: 'cityId',
@@ -139,8 +148,8 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
         optionsFrom: 'topics',
         optionsLabelKey: 'name',
       },
-      { key: 'date', label: 'Date', type: 'text', required: true, hint: 'YYYY-MM-DD' },
-      { key: 'time', label: 'Time', type: 'text', required: true, hint: 'HH:MM' },
+      { key: 'date', label: 'Date', type: 'date', required: true },
+      { key: 'time', label: 'Time', type: 'time', required: true },
       { key: 'recurring', label: 'Recurring', type: 'text', hint: 'e.g. Wednesday' },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
       { key: 'capacity', label: 'Capacity', type: 'number' },
@@ -162,7 +171,7 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
     imageField: 'avatar',
     identityFrom: 'name',
     fields: [
-      { key: 'id', label: 'ID', type: 'text', required: true },
+      { key: 'id', label: 'ID', type: 'text', required: true, hidden: true },
       { key: 'name', label: 'Name', type: 'text', required: true, generatesIdentity: true },
       { key: 'role', label: 'Role', type: 'text' },
       { key: 'bio', label: 'Bio', type: 'textarea' },
@@ -176,8 +185,8 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
     imageField: null,
     identityFrom: 'name',
     fields: [
-      { key: 'id', label: 'ID', type: 'text', required: true },
-      { key: 'slug', label: 'Slug', type: 'text', required: true },
+      { key: 'id', label: 'ID', type: 'text', required: true, hidden: true },
+      { key: 'slug', label: 'Slug', type: 'text', required: true, hidden: true },
       { key: 'name', label: 'Name', type: 'text', required: true, generatesIdentity: true },
       { key: 'tagline', label: 'Tagline', type: 'text', required: true },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
@@ -201,7 +210,7 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
     imageField: null,
     identityFrom: 'question',
     fields: [
-      { key: 'id', label: 'ID', type: 'text', required: true },
+      { key: 'id', label: 'ID', type: 'text', required: true, hidden: true },
       { key: 'question', label: 'Question', type: 'text', required: true, generatesIdentity: true },
       { key: 'answer', label: 'Answer', type: 'textarea', required: true },
       { key: 'sortOrder', label: 'Sort order', type: 'number' },
@@ -213,7 +222,7 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
     imageField: 'avatar',
     identityFrom: 'name',
     fields: [
-      { key: 'id', label: 'ID', type: 'text', required: true },
+      { key: 'id', label: 'ID', type: 'text', required: true, hidden: true },
       { key: 'name', label: 'Name', type: 'text', required: true, generatesIdentity: true },
       { key: 'role', label: 'Role', type: 'text', required: true },
       { key: 'quote', label: 'Quote', type: 'textarea', required: true },
@@ -233,13 +242,13 @@ export const RESOURCE_SCHEMAS: Record<ResourceId, ResourceSchema> = {
     imageField: null,
     identityFrom: 'title',
     fields: [
-      { key: 'id', label: 'ID', type: 'text', required: true },
+      { key: 'id', label: 'ID', type: 'text', required: true, hidden: true },
       { key: 'title', label: 'Title', type: 'text', required: true, generatesIdentity: true },
       { key: 'excerpt', label: 'Excerpt', type: 'textarea', required: true },
       { key: 'url', label: 'URL', type: 'text', required: true },
       { key: 'outlet', label: 'Outlet', type: 'text', required: true },
       { key: 'author', label: 'Author', type: 'text' },
-      { key: 'date', label: 'Date', type: 'text', hint: 'YYYY-MM-DD' },
+      { key: 'date', label: 'Date', type: 'date' },
       {
         key: 'cityId',
         label: 'City',

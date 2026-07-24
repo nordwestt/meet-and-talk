@@ -56,8 +56,6 @@ export function AdminPanel() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<Record<string, unknown> | null>(null)
   const [isNew, setIsNew] = useState(false)
-  const [idLocked, setIdLocked] = useState(true)
-  const [slugLocked, setSlugLocked] = useState(true)
 
   const resourceMeta = useMemo(
     () => RESOURCES.find((r) => r.id === resource)!,
@@ -65,7 +63,10 @@ export function AdminPanel() {
   )
   const schema = RESOURCE_SCHEMAS[resource]
   const hasSlug = schema.fields.some((f) => f.key === 'slug')
-
+  const visibleFields = useMemo(
+    () => schema.fields.filter((f) => !f.hidden),
+    [schema.fields],
+  )
   useEffect(() => {
     setSettings(loadSettings())
     setHydrated(true)
@@ -121,8 +122,6 @@ export function AdminPanel() {
     setSelectedId(null)
     setIsNew(false)
     setDraft(null)
-    setIdLocked(true)
-    setSlugLocked(true)
     if (!connected) return
     setBusy(true)
     try {
@@ -140,23 +139,22 @@ export function AdminPanel() {
     [items],
   )
 
-  const applyIdentity = (
+  const withIdentity = (
     prev: Record<string, unknown>,
     sourceValue: string,
-    lockId: boolean,
-    lockSlug: boolean,
+    { refreshId, refreshSlug }: { refreshId: boolean; refreshSlug: boolean },
   ) => {
     const next = { ...prev }
     const base = slugify(sourceValue)
-    if (!lockId) {
+    if (refreshId) {
       next.id = uniqueSlug(
-        base || 'item',
+        base,
         existingIds.filter((id) => id !== String(prev.id ?? '')),
       )
     }
-    if (hasSlug && !lockSlug) {
+    if (hasSlug && refreshSlug) {
       next.slug = uniqueSlug(
-        base || 'item',
+        base,
         [],
         existingSlugs.filter((s) => s !== String(prev.slug ?? '')),
       )
@@ -168,17 +166,12 @@ export function AdminPanel() {
     setIsNew(false)
     setSelectedId(String(item.id))
     setDraft({ ...item })
-    setIdLocked(true)
-    setSlugLocked(true)
   }
 
   const startNew = () => {
     setIsNew(true)
     setSelectedId(null)
-    setIdLocked(false)
-    setSlugLocked(false)
-    const stub = emptyRecord(resource)
-    setDraft(stub)
+    setDraft(emptyRecord(resource))
   }
 
   const duplicateSelected = () => {
@@ -195,8 +188,6 @@ export function AdminPanel() {
     }
     setIsNew(true)
     setSelectedId(null)
-    setIdLocked(false)
-    setSlugLocked(false)
     setDraft(copy)
     toast.message('Duplicated — edit and save as a new record')
   }
@@ -206,23 +197,36 @@ export function AdminPanel() {
       if (!prev) return prev
       let next = { ...prev, [key]: value }
       const field = schema.fields.find((f) => f.key === key)
-      if (field?.generatesIdentity && typeof value === 'string') {
-        next = applyIdentity(next, value, idLocked, slugLocked)
+      // Only refresh id/slug while creating; never rewrite identity on existing rows
+      if (isNew && field?.generatesIdentity && typeof value === 'string') {
+        next = withIdentity(next, value, { refreshId: true, refreshSlug: true })
       }
       return next
     })
-    if (key === 'id') setIdLocked(true)
-    if (key === 'slug') setSlugLocked(true)
   }
 
   const saveDraft = async () => {
     if (!draft) return
-    const body = { ...draft }
+    let body = { ...draft }
+
+    // Ensure hidden identity fields exist before create
+    if (isNew) {
+      const source = String(body[schema.identityFrom] ?? '')
+      if (!source.trim()) {
+        toast.error(`Please fill in ${schema.identityFrom}`)
+        return
+      }
+      body = withIdentity(body, source, { refreshId: true, refreshSlug: hasSlug })
+    }
+
     if (!body.id || typeof body.id !== 'string' || !body.id.trim()) {
-      toast.error('ID is required')
+      toast.error('Could not generate an ID')
       return
     }
-    // Drop empty optional strings / nulls that confuse required checks loosely
+    if (hasSlug && (!body.slug || typeof body.slug !== 'string')) {
+      body.slug = body.id
+    }
+
     for (const [k, v] of Object.entries(body)) {
       if (v === '') {
         const field = schema.fields.find((f) => f.key === k)
@@ -249,8 +253,6 @@ export function AdminPanel() {
       setIsNew(false)
       setSelectedId(String(body.id))
       setDraft(body)
-      setIdLocked(true)
-      setSlugLocked(true)
     } catch (err) {
       toast.error(err instanceof AdminApiError ? err.message : 'Save failed')
     } finally {
@@ -426,7 +428,11 @@ export function AdminPanel() {
             <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="font-display text-lg font-bold">
-                  {isNew ? 'New record' : selectedId ? `Edit · ${selectedId}` : 'Editor'}
+                  {isNew
+                    ? 'New record'
+                    : draft
+                      ? `Edit · ${itemTitle(draft, resourceMeta.titleKey)}`
+                      : 'Editor'}
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -460,7 +466,7 @@ export function AdminPanel() {
                 </p>
               ) : (
                 <div className="flex max-h-[36rem] flex-col gap-4 overflow-y-auto pr-1">
-                  {schema.fields.map((field) => (
+                  {visibleFields.map((field) => (
                     <FieldControl
                       key={field.key}
                       field={field}
@@ -547,6 +553,25 @@ function FieldControl({
             onChange(raw === '' ? null : Number(raw))
           }}
         />
+      </div>
+    )
+  }
+
+  if (field.type === 'date' || field.type === 'time') {
+    // Normalize stored values for native pickers (HH:MM:SS → HH:MM)
+    const raw = String(value ?? '')
+    const normalized =
+      field.type === 'time' && /^\d{2}:\d{2}:\d{2}$/.test(raw) ? raw.slice(0, 5) : raw
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={id}>{field.label}</Label>
+        <Input
+          id={id}
+          type={field.type}
+          value={normalized}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        {field.hint ? <p className="text-xs text-muted-foreground">{field.hint}</p> : null}
       </div>
     )
   }
