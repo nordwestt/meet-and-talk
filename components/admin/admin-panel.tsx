@@ -290,8 +290,9 @@ export function AdminPanel() {
       await refreshList(settings, resource)
       setIsNew(false)
       setSelectedId(String(body.id))
-      setDraft(body)
-      setMobileScreen('editor')
+      setDraft(null)
+      setMobileScreen('list')
+      if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
       toast.error(err instanceof AdminApiError ? err.message : 'Save failed')
     } finally {
