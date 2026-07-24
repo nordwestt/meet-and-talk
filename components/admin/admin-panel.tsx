@@ -8,6 +8,7 @@ import {
   ChevronUp,
   CircleHelp,
   Copy,
+  ArrowLeft,
   ImagePlus,
   Loader2,
   MapPin,
@@ -52,6 +53,7 @@ import {
 } from '@/lib/admin/schema'
 
 type ListResponse = { data: Record<string, unknown>[] }
+type MobileScreen = 'categories' | 'list' | 'editor'
 
 const RESOURCE_ICONS: Record<string, LucideIcon> = {
   CalendarDays,
@@ -74,6 +76,7 @@ export function AdminPanel() {
   const [hydrated, setHydrated] = useState(false)
   const [connected, setConnected] = useState(false)
   const [showConnectionDetails, setShowConnectionDetails] = useState(true)
+  const [mobileScreen, setMobileScreen] = useState<MobileScreen>('categories')
   const [busy, setBusy] = useState(false)
   const [resource, setResource] = useState<ResourceId>('events')
   const [items, setItems] = useState<Record<string, unknown>[]>([])
@@ -131,6 +134,7 @@ export function AdminPanel() {
       await loadRelated(settings)
       setConnected(true)
       setShowConnectionDetails(false)
+      setMobileScreen('categories')
       setSelectedId(null)
       setIsNew(false)
       setDraft(null)
@@ -149,6 +153,8 @@ export function AdminPanel() {
     setSelectedId(null)
     setIsNew(false)
     setDraft(null)
+    setMobileScreen('list')
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
     if (!connected) return
     setBusy(true)
     try {
@@ -193,12 +199,16 @@ export function AdminPanel() {
     setIsNew(false)
     setSelectedId(String(item.id))
     setDraft({ ...item })
+    setMobileScreen('editor')
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const startNew = () => {
     setIsNew(true)
     setSelectedId(null)
     setDraft(emptyRecord(resource))
+    setMobileScreen('editor')
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const duplicateSelected = () => {
@@ -216,6 +226,7 @@ export function AdminPanel() {
     setIsNew(true)
     setSelectedId(null)
     setDraft(copy)
+    setMobileScreen('editor')
     toast.message('Duplicated — edit and save as a new record')
   }
 
@@ -280,6 +291,7 @@ export function AdminPanel() {
       setIsNew(false)
       setSelectedId(String(body.id))
       setDraft(body)
+      setMobileScreen('editor')
     } catch (err) {
       toast.error(err instanceof AdminApiError ? err.message : 'Save failed')
     } finally {
@@ -296,12 +308,26 @@ export function AdminPanel() {
       toast.success('Deleted')
       setSelectedId(null)
       setDraft(null)
+      setMobileScreen('list')
       await refreshList(settings, resource)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Delete failed')
     } finally {
       setBusy(false)
     }
+  }
+
+  const backFromEditor = () => {
+    setDraft(null)
+    setSelectedId(null)
+    setIsNew(false)
+    setMobileScreen('list')
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const backFromList = () => {
+    setMobileScreen('categories')
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   if (!hydrated) {
@@ -312,9 +338,16 @@ export function AdminPanel() {
     )
   }
 
+  const hideChromeOnMobile =
+    connected && mobileScreen !== 'categories'
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
-      <header className="mb-8 flex flex-col gap-2 border-b border-border pb-6">
+    <div className="mx-auto max-w-6xl px-2 py-4 sm:px-4 sm:py-14">
+      <header
+        className={`mb-4 flex flex-col gap-2 border-b border-border pb-4 sm:mb-8 sm:pb-6 ${
+          hideChromeOnMobile ? 'max-lg:hidden' : ''
+        }`}
+      >
         <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
           Internal
         </p>
@@ -327,7 +360,11 @@ export function AdminPanel() {
         </p>
       </header>
 
-      <section className="mb-6 rounded-2xl border-2 border-border bg-card shadow-sm">
+      <section
+        className={`mb-4 rounded-2xl border-2 border-border bg-card shadow-sm sm:mb-6 ${
+          hideChromeOnMobile ? 'max-lg:hidden' : ''
+        }`}
+      >
         {connected && !showConnectionDetails ? (
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div className="flex min-w-0 items-center gap-2 text-sm">
@@ -413,8 +450,15 @@ export function AdminPanel() {
       </section>
 
       {!connected ? null : (
-        <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
-          <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col">
+        <div className="grid gap-3 sm:gap-6 lg:grid-cols-[240px_1fr]">
+          <nav
+            className={`flex flex-col gap-1.5 ${
+              mobileScreen !== 'categories' ? 'max-lg:hidden' : ''
+            }`}
+          >
+            <p className="mb-1 px-1 text-sm font-medium text-muted-foreground lg:hidden">
+              Choose a category
+            </p>
             {RESOURCES.map((r) => {
               const Icon = RESOURCE_ICONS[r.icon] ?? CalendarDays
               const active = resource === r.id
@@ -423,29 +467,46 @@ export function AdminPanel() {
                   key={r.id}
                   type="button"
                   onClick={() => loadResource(r.id)}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
+                  className={`inline-flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left text-base font-medium transition-colors max-lg:active:bg-primary max-lg:active:text-primary-foreground lg:min-h-0 lg:gap-2 lg:rounded-lg lg:border-transparent lg:px-3 lg:py-2 lg:text-sm ${
                     active
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'lg:bg-primary lg:text-primary-foreground'
                       : 'hover:bg-muted'
                   }`}
                 >
-                  <Icon className="size-4 shrink-0 opacity-90" />
-                  {r.label}
+                  <Icon className="size-5 shrink-0 opacity-90 lg:size-4" />
+                  <span className="min-w-0 truncate">{r.label}</span>
                 </button>
               )
             })}
           </nav>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-            <div className="rounded-2xl border border-border bg-card">
-              <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
-                <h2 className="font-display text-lg font-bold">{resourceMeta.label}</h2>
+          <div className="grid min-w-0 gap-3 sm:gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+            <div
+              className={`min-w-0 overflow-hidden rounded-2xl border border-border bg-card ${
+                mobileScreen !== 'list' ? 'max-lg:hidden' : ''
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2 border-b border-border px-2 py-2.5 sm:px-4 sm:py-3">
+                <div className="flex min-w-0 items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="shrink-0 lg:hidden"
+                    onClick={backFromList}
+                    aria-label="Back to categories"
+                  >
+                    <ArrowLeft />
+                  </Button>
+                  <h2 className="truncate font-display text-lg font-bold">
+                    {resourceMeta.label}
+                  </h2>
+                </div>
                 <Button size="sm" variant="secondary" onClick={startNew} disabled={busy}>
                   <Plus />
                   New
                 </Button>
               </div>
-              <ul className="max-h-[32rem] divide-y divide-border overflow-y-auto">
+              <ul className="max-h-[min(70vh,32rem)] divide-y divide-border overflow-y-auto lg:max-h-[32rem]">
                 {items.length === 0 ? (
                   <li className="px-4 py-8 text-center text-sm text-muted-foreground">
                     No rows yet
@@ -455,18 +516,20 @@ export function AdminPanel() {
                     const id = String(item.id)
                     const active = !isNew && selectedId === id
                     return (
-                      <li key={id}>
+                      <li key={id} className="min-w-0">
                         <button
                           type="button"
                           onClick={() => selectItem(item)}
-                          className={`flex w-full flex-col gap-0.5 px-4 py-3 text-left transition-colors ${
+                          className={`flex w-full min-w-0 flex-col justify-center gap-0.5 px-3 py-3 text-left transition-colors sm:min-h-14 sm:px-4 ${
                             active ? 'bg-muted' : 'hover:bg-muted/60'
                           }`}
                         >
-                          <span className="font-medium leading-tight">
+                          <span className="truncate font-medium leading-tight">
                             {itemTitle(item, resourceMeta.titleKey)}
                           </span>
-                          <span className="font-mono text-xs text-muted-foreground">{id}</span>
+                          <span className="truncate font-mono text-xs text-muted-foreground">
+                            {id}
+                          </span>
                         </button>
                       </li>
                     )
@@ -475,90 +538,112 @@ export function AdminPanel() {
               </ul>
             </div>
 
-            <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="font-display text-lg font-bold">
-                  {isNew
-                    ? 'New record'
-                    : draft
-                      ? `Edit · ${itemTitle(draft, resourceMeta.titleKey)}`
-                      : 'Editor'}
-                </h2>
-                <div className="flex flex-wrap gap-2">
+            <div
+              className={`flex min-w-0 flex-col gap-3 overflow-hidden rounded-2xl border border-border bg-card p-3 sm:p-4 ${
+                mobileScreen !== 'editor' ? 'max-lg:hidden' : ''
+              }`}
+            >
+              <div className="flex min-w-0 items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-1">
                   <Button
                     size="sm"
-                    variant="outline"
-                    onClick={duplicateSelected}
-                    disabled={busy || (!draft && !selectedId)}
+                    variant="ghost"
+                    className="shrink-0 lg:hidden"
+                    onClick={backFromEditor}
+                    aria-label="Back to list"
                   >
-                    <Copy />
-                    Duplicate
+                    <ArrowLeft />
                   </Button>
-                  <Button size="sm" onClick={saveDraft} disabled={busy || !draft}>
-                    {busy ? <Loader2 className="animate-spin" /> : <Save />}
-                    Save
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={removeSelected}
-                    disabled={busy || isNew || !selectedId}
-                  >
-                    <Trash2 />
-                    Delete
-                  </Button>
+                  <h2 className="min-w-0 truncate font-display text-lg font-bold">
+                    {isNew
+                      ? 'New record'
+                      : draft
+                        ? `Edit · ${itemTitle(draft, resourceMeta.titleKey)}`
+                        : 'Editor'}
+                  </h2>
                 </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={duplicateSelected}
+                  disabled={busy || (!draft && !selectedId)}
+                >
+                  <Copy />
+                  <span className="max-sm:hidden">Duplicate</span>
+                </Button>
               </div>
 
               {!draft ? (
-                <p className="py-16 text-center text-sm text-muted-foreground">
+                <p className="hidden py-16 text-center text-sm text-muted-foreground lg:block">
                   Select a row or create a new one
                 </p>
               ) : (
-                <div className="flex max-h-[36rem] flex-col gap-4 overflow-y-auto pr-1">
-                  {visibleFields.map((field) => (
-                    <FieldControl
-                      key={field.key}
-                      field={field}
-                      value={draft[field.key]}
-                      related={related}
-                      busy={busy}
-                      uploadFolder={schema.uploadFolder}
-                      onUpload={
-                        field.type === 'image'
-                          ? async (file) => {
-                              if (!file) return
-                              setBusy(true)
-                              try {
-                                const dataUrl = await readAsDataUrl(file)
-                                const result = await adminFetch<{ path: string }>(
-                                  settings,
-                                  '/v1/uploads',
-                                  {
-                                    method: 'POST',
-                                    body: JSON.stringify({
-                                      folder: schema.uploadFolder,
-                                      filename: file.name.replace(/\.[^.]+$/, ''),
-                                      data: dataUrl,
-                                    }),
-                                  },
-                                )
-                                setField(field.key, result.path)
-                                toast.success('Photo uploaded')
-                              } catch (err) {
-                                toast.error(
-                                  err instanceof Error ? err.message : 'Upload failed',
-                                )
-                              } finally {
-                                setBusy(false)
+                <>
+                  <div className="flex max-h-[min(70vh,36rem)] flex-col gap-4 overflow-y-auto pr-1 lg:max-h-[36rem]">
+                    {visibleFields.map((field) => (
+                      <FieldControl
+                        key={field.key}
+                        field={field}
+                        value={draft[field.key]}
+                        related={related}
+                        busy={busy}
+                        uploadFolder={schema.uploadFolder}
+                        onUpload={
+                          field.type === 'image'
+                            ? async (file) => {
+                                if (!file) return
+                                setBusy(true)
+                                try {
+                                  const dataUrl = await readAsDataUrl(file)
+                                  const result = await adminFetch<{ path: string }>(
+                                    settings,
+                                    '/v1/uploads',
+                                    {
+                                      method: 'POST',
+                                      body: JSON.stringify({
+                                        folder: schema.uploadFolder,
+                                        filename: file.name.replace(/\.[^.]+$/, ''),
+                                        data: dataUrl,
+                                      }),
+                                    },
+                                  )
+                                  setField(field.key, result.path)
+                                  toast.success('Photo uploaded')
+                                } catch (err) {
+                                  toast.error(
+                                    err instanceof Error ? err.message : 'Upload failed',
+                                  )
+                                } finally {
+                                  setBusy(false)
+                                }
                               }
-                            }
-                          : undefined
-                      }
-                      onChange={(value) => setField(field.key, value)}
-                    />
-                  ))}
-                </div>
+                            : undefined
+                        }
+                        onChange={(value) => setField(field.key, value)}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2 border-t border-border pt-3">
+                    <Button
+                      className="flex-1 sm:flex-none"
+                      onClick={saveDraft}
+                      disabled={busy || !draft}
+                    >
+                      {busy ? <Loader2 className="animate-spin" /> : <Save />}
+                      Save
+                    </Button>
+                    <Button
+                      className="flex-1 sm:flex-none"
+                      variant="destructive"
+                      onClick={removeSelected}
+                      disabled={busy || isNew || !selectedId}
+                    >
+                      <Trash2 />
+                      Delete
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
           </div>
