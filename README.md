@@ -13,12 +13,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Updating cities, events, etc.
 
-Content is edited in a Turso/libSQL database, then generated into `lib/data/*.ts`. See [docs/CONTENT.md](docs/CONTENT.md).
+Content lives in Turso. With `TURSO_DATABASE_URL` set on the server, edits show up
+on the next request (cached ~60s) — no rebuild. See [docs/CONTENT.md](docs/CONTENT.md).
 
 ```bash
 npm run content:seed       # first time: schema + seed
-npm run content:generate   # pull DB → lib/data
-npm run content:watch      # auto-regenerate on DB changes
+# edit Turso from your SQL client…
+# optional instant bust: POST /api/revalidate-content
 ```
 
 ## Releases

@@ -1,12 +1,15 @@
-# Content management (Turso + static codegen)
+# Content management (Turso + live reload)
 
-Meet & Talk keeps **runtime content static** (`lib/data/*.ts`) for a fast VPS deploy.
-**Turso** (or a local SQLite file) is the editable source of truth. After you change rows,
-regenerate the TypeScript modules and redeploy.
+Meetup content (cities, events, venues, topics, organisers, FAQs, testimonials, press)
+lives in **Turso**. The running Next.js app reads Turso on the server and caches the
+result briefly — **no rebuild or redeploy** after you edit rows.
 
 ```
-SQL client / turso shell  →  Turso DB  →  npm run content:generate  →  lib/data/*.ts  →  build / release
+SQL client  →  Turso  →  Next.js (cached ~60s)  →  browser
 ```
+
+Generated `lib/data/*.ts` files remain as an **offline / build fallback** when
+`TURSO_DATABASE_URL` is not set on the server.
 
 ## One-time setup
 
@@ -19,69 +22,68 @@ SQL client / turso shell  →  Turso DB  →  npm run content:generate  →  lib
    turso db tokens create meet-and-talk
    ```
 
-3. Copy [`.env.example`](../.env.example) to `.env.local` and fill in:
+3. Copy [`.env.example`](../.env.example) to `.env.local` (and on the VPS, into the
+   PM2 / process env):
 
-   - `TURSO_DATABASE_URL` — from `turso db show … --url`
-   - `TURSO_AUTH_TOKEN` — from `turso db tokens create …`
+   - `TURSO_DATABASE_URL`
+   - `TURSO_AUTH_TOKEN`
+   - Optional: `CONTENT_REVALIDATE_SECONDS` (default `60`)
+   - Optional: `CONTENT_REVALIDATE_SECRET` for instant cache bust
 
-4. Apply schema + current site seed:
+4. Apply schema + seed once:
 
    ```bash
    npm run content:seed
    ```
 
-### Offline / no Turso
+## Day-to-day editing (no redeploy)
 
-Omit the env vars. Commands use `content/local.db` (gitignored). First generate/seed creates it automatically.
+1. Edit tables with Beekeeper / TablePlus / `turso db shell`.
+2. Wait up to `CONTENT_REVALIDATE_SECONDS` (default 60), then refresh the site.
 
-## Day-to-day editing
+### Instant refresh
 
-1. Connect a SQL client (see below) and edit tables (`cities`, `events`, `venues`, …).
-2. Regenerate modules:
+After editing, call:
 
-   ```bash
-   npm run content:generate
-   ```
+```bash
+curl -X POST https://your-domain/api/revalidate-content \
+  -H "Authorization: Bearer $CONTENT_REVALIDATE_SECRET"
+```
 
-   Or keep a watcher running while you edit:
+That clears the content cache so the next page load hits Turso immediately.
 
-   ```bash
-   npm run content:watch
-   ```
+## Optional codegen
 
-3. Commit the updated `lib/data/*.ts` files (optional if CI has Turso credentials and runs `prebuild`).
-4. Deploy as usual (release zip / `./deploy.sh`). The VPS never talks to Turso.
+Still useful for local offline work or baking a snapshot into git:
 
-`npm run build` runs `content:generate` via `prebuild`. With Turso env set, the build bakes the latest remote content into the bundle.
+```bash
+npm run content:generate   # DB → lib/data/*.ts
+npm run content:watch      # regenerate while editing
+```
 
-For GitHub Releases, add repository secrets `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` so the release workflow regenerates from Turso. If those secrets are unset, the build falls back to a local DB seeded from `content/seed.sql`.
+`npm run build` runs generate via `prebuild` (fallback data). Production with Turso
+env vars ignores those files at runtime.
 
 ## Desktop SQL clients
 
-Use the same URL + token as in `.env.local`.
-
 | Client | Notes |
 |--------|--------|
-| [Beekeeper Studio](https://www.beekeeperstudio.io/) | libSQL / Turso connection type |
+| [Beekeeper Studio](https://www.beekeeperstudio.io/) | libSQL / Turso |
 | [TablePlus](https://tableplus.com/) | libSQL / Turso driver |
-| [Outerbase](https://outerbase.com/) / libSQL Studio | browser-based |
 | Turso CLI | `turso db shell meet-and-talk` |
-
-For a **local** file DB, open `content/local.db` as a normal SQLite file (no token).
 
 ## Tables
 
-| Table | Maps to |
-|-------|---------|
-| `topics` | `lib/data/topics.ts` |
-| `organisers` | `lib/data/organisers.ts` |
-| `cities` | `lib/data/cities.ts` |
-| `venues` | `lib/data/venues.ts` |
-| `events` | `lib/data/events.ts` |
-| `testimonials`, `faqs` | `lib/data/community.ts` |
-| `press_mentions` | `lib/data/press.ts` |
-| `city_organisers`, `city_topics`, `organiser_cities`, `event_organisers` | ID arrays on the entities above |
+| Table | Entity |
+|-------|--------|
+| `topics` | topics |
+| `organisers` | organisers |
+| `cities` | cities |
+| `venues` | venues |
+| `events` | events |
+| `testimonials`, `faqs` | community |
+| `press_mentions` | press |
+| Junction tables | `city_organisers`, `city_topics`, `organiser_cities`, `event_organisers` |
 
-Nested fields (`social`, `gallery`, `languages`) are stored as JSON text. Junction rows must be updated when you add organisers/topics to a city or event.
-
-Do **not** hand-edit generated `lib/data/*.ts` files (except `site.ts` / `index.ts`, which stay manual). Schema lives in [`content/schema.sql`](../content/schema.sql); reset data with [`content/seed.sql`](../content/seed.sql) via `npm run content:seed`.
+Nested fields (`social`, `gallery`, `languages`) are JSON text. Schema:
+[`content/schema.sql`](../content/schema.sql).

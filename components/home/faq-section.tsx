@@ -7,11 +7,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { SectionHeading } from '@/components/section-heading'
-import { faqs } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export function FaqSection() {
   const { t } = useI18n()
+  const { faqs } = useContent()
 
   return (
     <section className="border-y border-border bg-muted/40">

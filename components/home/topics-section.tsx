@@ -2,11 +2,12 @@
 
 import { TopicCard } from '@/components/cards/topic-card'
 import { SectionHeading } from '@/components/section-heading'
-import { topics } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export function TopicsSection() {
   const { t } = useI18n()
+  const { topics } = useContent()
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">

@@ -2,11 +2,12 @@
 
 import { CityCard } from '@/components/cards/city-card'
 import { PageHero } from '@/components/page-hero'
-import { getLiveCities, getPlannedCities } from '@/lib/data'
+import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export function CitiesContent() {
   const { t } = useI18n()
+  const { getLiveCities, getPlannedCities } = useContent()
   const live = getLiveCities()
   const planned = getPlannedCities()
 

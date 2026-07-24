@@ -1,8 +1,8 @@
 /**
  * Core domain model for Meet & Talk.
  *
- * Shapes map to Turso/libSQL rows (see `content/schema.sql`). Edit content in
- * the database, then run `npm run content:generate` to refresh `lib/data`.
+ * Shapes map to Turso/libSQL rows (see `content/schema.sql`). The running app
+ * loads them via `getContentBundle` / `useContent` when Turso is configured.
  */
 
 export type SocialPlatform =
