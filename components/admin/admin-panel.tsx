@@ -343,112 +343,104 @@ export function AdminPanel() {
     connected && mobileScreen !== 'categories'
 
   return (
-    <div className="mx-auto max-w-6xl px-2 py-4 sm:px-4 sm:py-14">
+    <div className="mx-auto max-w-6xl px-2 py-4 sm:px-4 sm:py-10">
       <header
-        className={`mb-4 flex flex-col gap-2 border-b border-border pb-4 sm:mb-8 sm:pb-6 ${
+        className={`mb-4 border-b border-border pb-4 sm:mb-6 sm:pb-5 ${
           hideChromeOnMobile ? 'max-lg:hidden' : ''
         }`}
       >
-        <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-          Internal
-        </p>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-          Admin panel
-        </h1>
-        <p className="max-w-2xl text-muted-foreground">
-          Paste your API token, connect to the Go admin API, then edit content. Token stays in
-          this browser only (localStorage).
-        </p>
-      </header>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+          <div className="min-w-0 shrink-0">
+            <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Internal
+            </p>
+            <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Admin panel
+            </h1>
+          </div>
 
-      <section
-        className={`mb-4 rounded-2xl border-2 border-border bg-card shadow-sm sm:mb-6 ${
-          hideChromeOnMobile ? 'max-lg:hidden' : ''
-        }`}
-      >
-        {connected && !showConnectionDetails ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-            <div className="flex min-w-0 items-center gap-2 text-sm">
-              <CheckCircle2 className="size-4 shrink-0 text-primary" />
-              <span className="font-medium text-primary">Connected</span>
-              <span className="truncate text-muted-foreground">{settings.baseUrl}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={connect} disabled={busy}>
-                {busy ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-                Reconnect
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setShowConnectionDetails(true)}
-              >
-                <ChevronDown />
-                Settings
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="p-5">
-            {connected ? (
-              <button
-                type="button"
-                className="mb-4 flex w-full items-center justify-between text-left text-sm font-medium"
-                onClick={() => setShowConnectionDetails(false)}
-              >
-                <span className="inline-flex items-center gap-1.5 text-primary">
-                  <CheckCircle2 className="size-4" />
-                  Connection settings
-                </span>
-                <ChevronUp className="size-4 text-muted-foreground" />
-              </button>
-            ) : null}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="admin-base">API base URL</Label>
-                <Input
-                  id="admin-base"
-                  value={settings.baseUrl}
-                  onChange={(e) => persist({ ...settings, baseUrl: e.target.value })}
-                  placeholder="http://127.0.0.1:3080 or /admin-api"
-                  autoComplete="off"
-                />
+          <div className="w-full min-w-0 rounded-2xl border-2 border-border bg-card shadow-sm lg:max-w-xl">
+            {connected && !showConnectionDetails ? (
+              <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4">
+                <div className="flex min-w-0 items-center gap-2 text-sm">
+                  <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                  <span className="font-medium text-primary">Connected</span>
+                  <span className="truncate text-muted-foreground">{settings.baseUrl}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={connect} disabled={busy}>
+                    {busy ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                    Reconnect
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowConnectionDetails(true)}
+                  >
+                    <ChevronDown />
+                    Settings
+                  </Button>
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="admin-token">Admin API token</Label>
-                <Input
-                  id="admin-token"
-                  type="password"
-                  value={settings.token}
-                  onChange={(e) => persist({ ...settings, token: e.target.value })}
-                  placeholder="Bearer token value"
-                  autoComplete="off"
-                />
+            ) : (
+              <div className="p-3 sm:p-4">
+                {connected ? (
+                  <button
+                    type="button"
+                    className="mb-3 flex w-full items-center justify-between text-left text-sm font-medium"
+                    onClick={() => setShowConnectionDetails(false)}
+                  >
+                    <span className="inline-flex items-center gap-1.5 text-primary">
+                      <CheckCircle2 className="size-4" />
+                      Connection settings
+                    </span>
+                    <ChevronUp className="size-4 text-muted-foreground" />
+                  </button>
+                ) : null}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="admin-base">API base URL</Label>
+                    <Input
+                      id="admin-base"
+                      value={settings.baseUrl}
+                      onChange={(e) => persist({ ...settings, baseUrl: e.target.value })}
+                      autoComplete="off"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="admin-token">API token</Label>
+                    <Input
+                      id="admin-token"
+                      type="password"
+                      value={settings.token}
+                      onChange={(e) => persist({ ...settings, token: e.target.value })}
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Button onClick={connect} disabled={busy || !settings.token}>
+                    {busy ? (
+                      <Loader2 className="animate-spin" />
+                    ) : connected ? (
+                      <RefreshCw />
+                    ) : (
+                      <Unplug />
+                    )}
+                    {connected ? 'Reconnect' : 'Connect'}
+                  </Button>
+                  {connected ? (
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                      <CheckCircle2 className="size-4" />
+                      Connected
+                    </span>
+                  ) : null}
+                </div>
               </div>
-            </div>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Button onClick={connect} disabled={busy || !settings.token}>
-                {busy ? (
-                  <Loader2 className="animate-spin" />
-                ) : connected ? (
-                  <RefreshCw />
-                ) : (
-                  <Unplug />
-                )}
-                {connected ? 'Reconnect' : 'Connect'}
-              </Button>
-              {connected ? (
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                  <CheckCircle2 className="size-4" />
-                  Connected
-                </span>
-              ) : (
-                <span className="text-sm text-muted-foreground">Not connected</span>
-              )}
-            </div>
+            )}
           </div>
-        )}
-      </section>
+        </div>
+      </header>
 
       {!connected ? null : (
         <div className="grid gap-3 sm:gap-6 lg:grid-cols-[240px_1fr]">
