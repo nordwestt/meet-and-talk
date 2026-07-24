@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CheckCircle2,
+  Copy,
   ImagePlus,
   Loader2,
   Plus,
@@ -25,16 +26,23 @@ import {
   type AdminSettings,
   type ResourceId,
 } from '@/lib/admin/client'
+import {
+  emptyRecord,
+  linesToValue,
+  parseJsonText,
+  RESOURCE_SCHEMAS,
+  slugify,
+  uniqueSlug,
+  valueToJsonText,
+  valueToLines,
+  type FieldDef,
+} from '@/lib/admin/schema'
 
 type ListResponse = { data: Record<string, unknown>[] }
 
 function itemTitle(item: Record<string, unknown>, titleKey: string) {
   const v = item[titleKey] ?? item.id ?? 'Untitled'
   return String(v)
-}
-
-function pretty(value: unknown) {
-  return JSON.stringify(value, null, 2)
 }
 
 export function AdminPanel() {
@@ -44,15 +52,19 @@ export function AdminPanel() {
   const [busy, setBusy] = useState(false)
   const [resource, setResource] = useState<ResourceId>('cities')
   const [items, setItems] = useState<Record<string, unknown>[]>([])
+  const [related, setRelated] = useState<Partial<Record<ResourceId, Record<string, unknown>[]>>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [draft, setDraft] = useState('{\n  \n}')
+  const [draft, setDraft] = useState<Record<string, unknown> | null>(null)
   const [isNew, setIsNew] = useState(false)
-  const [uploadFolder, setUploadFolder] = useState('cities')
+  const [idLocked, setIdLocked] = useState(true)
+  const [slugLocked, setSlugLocked] = useState(true)
 
   const resourceMeta = useMemo(
     () => RESOURCES.find((r) => r.id === resource)!,
     [resource],
   )
+  const schema = RESOURCE_SCHEMAS[resource]
+  const hasSlug = schema.fields.some((f) => f.key === 'slug')
 
   useEffect(() => {
     setSettings(loadSettings())
@@ -69,16 +81,32 @@ export function AdminPanel() {
     setItems(result.data ?? [])
   }, [])
 
+  const loadRelated = useCallback(async (s: AdminSettings) => {
+    const needed: ResourceId[] = ['cities', 'venues', 'topics']
+    const entries = await Promise.all(
+      needed.map(async (id) => {
+        try {
+          const result = await adminFetch<ListResponse>(s, `/v1/${id}`)
+          return [id, result.data ?? []] as const
+        } catch {
+          return [id, []] as const
+        }
+      }),
+    )
+    setRelated(Object.fromEntries(entries))
+  }, [])
+
   const connect = async () => {
     setBusy(true)
     try {
       saveSettings(settings)
       await adminFetch(settings, '/v1/health')
-      // health is public; verify token with a real resource list
       await refreshList(settings, resource)
+      await loadRelated(settings)
       setConnected(true)
       setSelectedId(null)
       setIsNew(false)
+      setDraft(null)
       toast.success('Connected')
     } catch (err) {
       setConnected(false)
@@ -92,7 +120,9 @@ export function AdminPanel() {
     setResource(res)
     setSelectedId(null)
     setIsNew(false)
-    setDraft('{\n  \n}')
+    setDraft(null)
+    setIdLocked(true)
+    setSlugLocked(true)
     if (!connected) return
     setBusy(true)
     try {
@@ -104,77 +134,100 @@ export function AdminPanel() {
     }
   }
 
+  const existingIds = useMemo(() => items.map((i) => String(i.id)), [items])
+  const existingSlugs = useMemo(
+    () => items.map((i) => String(i.slug ?? '')).filter(Boolean),
+    [items],
+  )
+
+  const applyIdentity = (
+    prev: Record<string, unknown>,
+    sourceValue: string,
+    lockId: boolean,
+    lockSlug: boolean,
+  ) => {
+    const next = { ...prev }
+    const base = slugify(sourceValue)
+    if (!lockId) {
+      next.id = uniqueSlug(
+        base || 'item',
+        existingIds.filter((id) => id !== String(prev.id ?? '')),
+      )
+    }
+    if (hasSlug && !lockSlug) {
+      next.slug = uniqueSlug(
+        base || 'item',
+        [],
+        existingSlugs.filter((s) => s !== String(prev.slug ?? '')),
+      )
+    }
+    return next
+  }
+
   const selectItem = (item: Record<string, unknown>) => {
     setIsNew(false)
     setSelectedId(String(item.id))
-    setDraft(pretty(item))
+    setDraft({ ...item })
+    setIdLocked(true)
+    setSlugLocked(true)
   }
 
   const startNew = () => {
     setIsNew(true)
     setSelectedId(null)
-    const stub: Record<string, unknown> = { id: '' }
-    if (resource === 'cities') {
-      Object.assign(stub, {
-        slug: '',
-        name: '',
-        country: '',
-        countryFlag: '',
-        description: '',
-        status: 'planned',
-        social: [],
-        timezone: 'CET',
-      })
-    } else if (resource === 'events') {
-      Object.assign(stub, {
-        slug: '',
-        title: '',
-        cityId: '',
-        venueId: '',
-        topicId: '',
-        date: '',
-        time: '18:30',
-        description: '',
-      })
-    } else if (resource === 'venues') {
-      Object.assign(stub, {
-        name: '',
-        cityId: '',
-        address: '',
-      })
-    } else if (resource === 'topics') {
-      Object.assign(stub, {
-        slug: '',
-        name: '',
-        tagline: '',
-        description: '',
-        icon: 'MessagesSquare',
-        color: 'var(--chart-1)',
-        status: 'soon',
-      })
-    } else if (resource === 'organisers') {
-      Object.assign(stub, { name: '', role: '', bio: '', social: [] })
-    } else if (resource === 'faqs') {
-      Object.assign(stub, { question: '', answer: '', sortOrder: 0 })
-    } else if (resource === 'testimonials') {
-      Object.assign(stub, { quote: '', name: '', role: '' })
-    } else if (resource === 'press') {
-      Object.assign(stub, { title: '', excerpt: '', url: '', outlet: '' })
+    setIdLocked(false)
+    setSlugLocked(false)
+    const stub = emptyRecord(resource)
+    setDraft(stub)
+  }
+
+  const duplicateSelected = () => {
+    const fromList = items.find((i) => String(i.id) === selectedId)
+    const baseSource = fromList ?? draft
+    if (!baseSource) return
+
+    const copy: Record<string, unknown> = { ...baseSource }
+    const identitySource = String(copy[schema.identityFrom] ?? copy.id ?? 'item')
+    const base = `${slugify(identitySource)}-copy`
+    copy.id = uniqueSlug(base, existingIds)
+    if (hasSlug) {
+      copy.slug = uniqueSlug(base, [], existingSlugs)
     }
-    setDraft(pretty(stub))
+    setIsNew(true)
+    setSelectedId(null)
+    setIdLocked(false)
+    setSlugLocked(false)
+    setDraft(copy)
+    toast.message('Duplicated — edit and save as a new record')
+  }
+
+  const setField = (key: string, value: unknown) => {
+    setDraft((prev) => {
+      if (!prev) return prev
+      let next = { ...prev, [key]: value }
+      const field = schema.fields.find((f) => f.key === key)
+      if (field?.generatesIdentity && typeof value === 'string') {
+        next = applyIdentity(next, value, idLocked, slugLocked)
+      }
+      return next
+    })
+    if (key === 'id') setIdLocked(true)
+    if (key === 'slug') setSlugLocked(true)
   }
 
   const saveDraft = async () => {
-    let body: Record<string, unknown>
-    try {
-      body = JSON.parse(draft) as Record<string, unknown>
-    } catch {
-      toast.error('Draft is not valid JSON')
+    if (!draft) return
+    const body = { ...draft }
+    if (!body.id || typeof body.id !== 'string' || !body.id.trim()) {
+      toast.error('ID is required')
       return
     }
-    if (!body.id || typeof body.id !== 'string') {
-      toast.error('Each record needs a string "id"')
-      return
+    // Drop empty optional strings / nulls that confuse required checks loosely
+    for (const [k, v] of Object.entries(body)) {
+      if (v === '') {
+        const field = schema.fields.find((f) => f.key === k)
+        if (!field?.required) delete body[k]
+      }
     }
     setBusy(true)
     try {
@@ -195,7 +248,9 @@ export function AdminPanel() {
       await refreshList(settings, resource)
       setIsNew(false)
       setSelectedId(String(body.id))
-      setDraft(pretty(body))
+      setDraft(body)
+      setIdLocked(true)
+      setSlugLocked(true)
     } catch (err) {
       toast.error(err instanceof AdminApiError ? err.message : 'Save failed')
     } finally {
@@ -211,7 +266,7 @@ export function AdminPanel() {
       await adminFetch(settings, `/v1/${resource}/${selectedId}`, { method: 'DELETE' })
       toast.success('Deleted')
       setSelectedId(null)
-      setDraft('{\n  \n}')
+      setDraft(null)
       await refreshList(settings, resource)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Delete failed')
@@ -221,31 +276,24 @@ export function AdminPanel() {
   }
 
   const onUpload = async (file: File | null) => {
-    if (!file) return
+    if (!file || !draft) return
+    const imageField = schema.imageField
+    if (!imageField) {
+      toast.error('This resource has no image field')
+      return
+    }
     setBusy(true)
     try {
       const dataUrl = await readAsDataUrl(file)
       const result = await adminFetch<{ path: string }>(settings, '/v1/uploads', {
         method: 'POST',
         body: JSON.stringify({
-          folder: uploadFolder,
+          folder: schema.uploadFolder,
           filename: file.name.replace(/\.[^.]+$/, ''),
           data: dataUrl,
         }),
       })
-      try {
-        const parsed = JSON.parse(draft) as Record<string, unknown>
-        if ('image' in parsed || resource === 'cities' || resource === 'venues' || resource === 'events') {
-          parsed.image = result.path
-        } else if (resource === 'organisers' || resource === 'testimonials') {
-          parsed.avatar = result.path
-        } else {
-          parsed.image = result.path
-        }
-        setDraft(pretty(parsed))
-      } catch {
-        /* leave draft */
-      }
+      setField(imageField, result.path)
       toast.success(`Uploaded ${result.path}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
@@ -336,7 +384,7 @@ export function AdminPanel() {
             ))}
           </nav>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
             <div className="rounded-2xl border border-border bg-card">
               <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
                 <h2 className="font-display text-lg font-bold">{resourceMeta.label}</h2>
@@ -345,7 +393,7 @@ export function AdminPanel() {
                   New
                 </Button>
               </div>
-              <ul className="max-h-[28rem] divide-y divide-border overflow-y-auto">
+              <ul className="max-h-[32rem] divide-y divide-border overflow-y-auto">
                 {items.length === 0 ? (
                   <li className="px-4 py-8 text-center text-sm text-muted-foreground">
                     No rows yet
@@ -383,9 +431,14 @@ export function AdminPanel() {
                 <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
-                    onClick={saveDraft}
-                    disabled={busy || (!isNew && !selectedId)}
+                    variant="outline"
+                    onClick={duplicateSelected}
+                    disabled={busy || (!draft && !selectedId)}
                   >
+                    <Copy />
+                    Duplicate
+                  </Button>
+                  <Button size="sm" onClick={saveDraft} disabled={busy || !draft}>
                     {busy ? <Loader2 className="animate-spin" /> : <Save />}
                     Save
                   </Button>
@@ -401,57 +454,179 @@ export function AdminPanel() {
                 </div>
               </div>
 
-              <Textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                className="min-h-[22rem] font-mono text-xs leading-relaxed"
-                spellCheck={false}
-                placeholder="Select a row or create a new one"
-              />
-
-              <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3">
-                <div className="mb-2 flex flex-wrap items-end gap-3">
-                  <div className="flex flex-col gap-1">
-                    <Label htmlFor="upload-folder" className="text-xs">
-                      Upload folder
-                    </Label>
-                    <select
-                      id="upload-folder"
-                      className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
-                      value={uploadFolder}
-                      onChange={(e) => setUploadFolder(e.target.value)}
-                    >
-                      {['cities', 'venues', 'people', 'community', 'misc'].map((f) => (
-                        <option key={f} value={f}>
-                          {f}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <label className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-[0.8rem] font-medium hover:bg-muted">
-                    <ImagePlus className="size-3.5" />
-                    Upload image
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      className="sr-only"
-                      disabled={busy}
-                      onChange={(e) => {
-                        void onUpload(e.target.files?.[0] ?? null)
-                        e.target.value = ''
-                      }}
-                    />
-                  </label>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Uploads via the API, then sets <code>image</code> or <code>avatar</code> on the
-                  draft JSON when possible.
+              {!draft ? (
+                <p className="py-16 text-center text-sm text-muted-foreground">
+                  Select a row or create a new one
                 </p>
-              </div>
+              ) : (
+                <div className="flex max-h-[36rem] flex-col gap-4 overflow-y-auto pr-1">
+                  {schema.fields.map((field) => (
+                    <FieldControl
+                      key={field.key}
+                      field={field}
+                      value={draft[field.key]}
+                      related={related}
+                      onChange={(value) => setField(field.key, value)}
+                    />
+                  ))}
+
+                  {schema.imageField ? (
+                    <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3">
+                      <div className="mb-2 flex flex-wrap items-center gap-3">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Upload folder: <code>{schema.uploadFolder}</code>
+                        </span>
+                        <label className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-[0.8rem] font-medium hover:bg-muted">
+                          <ImagePlus className="size-3.5" />
+                          Upload image
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            className="sr-only"
+                            disabled={busy}
+                            onChange={(e) => {
+                              void onUpload(e.target.files?.[0] ?? null)
+                              e.target.value = ''
+                            }}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Fills the <code>{schema.imageField}</code> field after upload.
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function FieldControl({
+  field,
+  value,
+  related,
+  onChange,
+}: {
+  field: FieldDef
+  value: unknown
+  related: Partial<Record<ResourceId, Record<string, unknown>[]>>
+  onChange: (value: unknown) => void
+}) {
+  const id = `field-${field.key}`
+
+  if (field.type === 'textarea') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={id}>{field.label}</Label>
+        <Textarea
+          id={id}
+          value={String(value ?? '')}
+          onChange={(e) => onChange(e.target.value)}
+          className="min-h-24"
+        />
+        {field.hint ? <p className="text-xs text-muted-foreground">{field.hint}</p> : null}
+      </div>
+    )
+  }
+
+  if (field.type === 'number') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={id}>{field.label}</Label>
+        <Input
+          id={id}
+          type="number"
+          value={value == null || value === '' ? '' : String(value)}
+          onChange={(e) => {
+            const raw = e.target.value
+            onChange(raw === '' ? null : Number(raw))
+          }}
+        />
+      </div>
+    )
+  }
+
+  if (field.type === 'select') {
+    const options =
+      field.options ??
+      (field.optionsFrom
+        ? (related[field.optionsFrom] ?? []).map((row) => ({
+            value: String(row.id),
+            label: String(row[field.optionsLabelKey ?? 'name'] ?? row.id),
+          }))
+        : [])
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={id}>{field.label}</Label>
+        <select
+          id={id}
+          className="h-8 rounded-lg border border-input bg-background px-2.5 text-sm"
+          value={String(value ?? '')}
+          onChange={(e) => onChange(e.target.value)}
+        >
+          <option value="">Select…</option>
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    )
+  }
+
+  if (field.type === 'lines') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={id}>{field.label}</Label>
+        <Textarea
+          id={id}
+          value={valueToLines(field.key, value)}
+          onChange={(e) => onChange(linesToValue(field.key, e.target.value))}
+          className="min-h-20 font-mono text-xs"
+        />
+        {field.hint ? <p className="text-xs text-muted-foreground">{field.hint}</p> : null}
+      </div>
+    )
+  }
+
+  if (field.type === 'json') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={id}>{field.label}</Label>
+        <Textarea
+          id={id}
+          defaultValue={valueToJsonText(value)}
+          key={`${id}-${valueToJsonText(value).slice(0, 40)}`}
+          onBlur={(e) => {
+            try {
+              onChange(parseJsonText(e.target.value))
+            } catch {
+              toast.error(`Invalid JSON in ${field.label}`)
+            }
+          }}
+          className="min-h-24 font-mono text-xs"
+        />
+        {field.hint ? <p className="text-xs text-muted-foreground">{field.hint}</p> : null}
+      </div>
+    )
+  }
+
+  // text + image path
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={id}>{field.label}</Label>
+      <Input
+        id={id}
+        value={String(value ?? '')}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {field.hint ? <p className="text-xs text-muted-foreground">{field.hint}</p> : null}
     </div>
   )
 }

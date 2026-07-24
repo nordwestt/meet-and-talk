@@ -92,7 +92,7 @@ Response:
 
 Then `PATCH` the city with `"image": "/uploads/cities/..."`.
 
-Allowed folders: `cities`, `venues`, `people`, `community`, `misc`. Max 5 MiB. Types: jpeg, png, webp, gif.
+Allowed folders: `cities`, `venues`, `events`, `people`, `community`, `misc`. Max 5 MiB. Types: jpeg, png, webp, gif.
 
 ## Environment
 

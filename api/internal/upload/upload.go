@@ -15,7 +15,7 @@ const MaxBytes = 5 << 20 // 5 MiB
 
 var (
 	allowedFolders = map[string]bool{
-		"cities": true, "venues": true, "people": true, "community": true, "misc": true,
+		"cities": true, "venues": true, "events": true, "people": true, "community": true, "misc": true,
 	}
 	extByType = map[string]string{
 		"image/jpeg": ".jpg",
@@ -49,7 +49,7 @@ func (s *Service) Save(req Request) (Result, error) {
 		folder = "misc"
 	}
 	if !allowedFolders[folder] {
-		return Result{}, fmt.Errorf("folder must be one of: cities, venues, people, community, misc")
+		return Result{}, fmt.Errorf("folder must be one of: cities, venues, events, people, community, misc")
 	}
 
 	raw, contentType, err := decodePayload(req.Data, req.ContentType)
