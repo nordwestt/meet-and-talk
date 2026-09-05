@@ -150,5 +150,21 @@
   "footer.getInvolved": "Partecipa",
   "footer.rights": "Un progetto community dal basso.",
   "theme.toggle": "Cambia tema",
-  "lang.toggle": "Cambia lingua"
+  "lang.toggle": "Cambia lingua",
+  "cities.comingSoonTitle": "Prossimamente a {name}",
+  "cities.comingSoonBody": "Non siamo ancora partiti qui, ma stiamo raccogliendo interesse. Unisciti al gruppo WhatsApp per ricevere aggiornamenti quando Meet & Talk arriverà a {name}.",
+  "country.Italy": "Italia",
+  "country.Denmark": "Danimarca",
+  "city.trento.description": "Dove è nato Meet & Talk — una community accogliente di locali e internazionali che praticano le lingue davanti a un aperitivo nella porta delle Dolomiti.",
+  "city.copenhagen.description": "Hygge e ciao — bar accoglienti, gente calorosa e decine di lingue intorno a ogni tavolo nella nostra casa danese.",
+  "city.bolzano.description": "Stiamo raccogliendo interesse per un language exchange a Bolzano — unisciti alla lista d'attesa per saperlo per primo al lancio.",
+  "city.verona.description": "Stiamo raccogliendo interesse per un language exchange a Verona — unisciti alla lista d'attesa per saperlo per primo al lancio.",
+  "city.padova.description": "Stiamo raccogliendo interesse per un language exchange a Padova — unisciti alla lista d'attesa per saperlo per primo al lancio.",
+  "press.sanbaradio-trento-2026.excerpt": "Katia Divina racconta di aver finalmente trovato a Trento un posto informale per incontrare persone e praticare inglese e tedesco — nato dall'idea di Gabriele Casagranda e Paolo Pelizzari.",
+  "organiser.gabriele.role": "City lead · Trento",
+  "organiser.gabriele.bio": "Nato e cresciuto in Trentino. Ha avviato Meet & Talk qui e crede che il modo migliore per imparare le lingue sia in buona compagnia, con un aperitivo.",
+  "organiser.sofia.role": "City lead · Copenhagen",
+  "organiser.sofia.bio": "Svedese-danese, fluente in quattro lingue e sempre a caccia dei bar più accoglienti della città.",
+  "organiser.noah.role": "Co-organizzatore · Copenhagen",
+  "organiser.noah.bio": "Il volto amichevole alla porta che si assicura che nessuno resti da solo."
 }

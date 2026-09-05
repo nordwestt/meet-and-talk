@@ -39,7 +39,7 @@ export function Hero() {
           </div>
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <MapPin className="size-4 text-primary" />
-            {t('hero.cities.count').replace('{count}', String(liveCities))}
+            {t('hero.cities.count', { count: liveCities })}
           </div>
         </div>
 

@@ -9,9 +9,11 @@ import { useI18n } from '@/lib/i18n/context'
 import type { City } from '@/lib/types'
 
 export function CityCard({ city }: { city: City }) {
-  const { t } = useI18n()
+  const { t, tc } = useI18n()
   const isPlanned = city.status === 'planned'
   const whatsapp = city.social.find((s) => s.platform === 'whatsapp')
+  const description = tc(`city.${city.id}.description`, city.description)
+  const country = tc(`country.${city.country}`, city.country)
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border-2 border-border bg-card transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0_0_hsl(var(--foreground))]">
@@ -36,7 +38,7 @@ export function CityCard({ city }: { city: City }) {
           <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-background">
             <MapPin className="size-4" aria-hidden="true" />
             <span className="text-sm font-medium">
-              {city.countryFlag} {city.country}
+              {city.countryFlag} {country}
             </span>
           </div>
         </div>
@@ -48,7 +50,7 @@ export function CityCard({ city }: { city: City }) {
               aria-hidden="true"
             />
           </div>
-          <p className="line-clamp-2 text-sm text-muted-foreground">{city.description}</p>
+          <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
           {!isPlanned && city.memberCount ? (
             <div className="mt-auto flex items-center gap-3 pt-2 text-xs font-medium text-muted-foreground">
               <span>{city.memberCount.toLocaleString()} {t('label.members')}</span>

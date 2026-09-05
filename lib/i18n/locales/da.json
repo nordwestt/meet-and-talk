@@ -150,5 +150,21 @@
   "footer.getInvolved": "Bliv involveret",
   "footer.rights": "Et grassroots fællesskabsprojekt.",
   "theme.toggle": "Skift tema",
-  "lang.toggle": "Skift sprog"
+  "lang.toggle": "Skift sprog",
+  "cities.comingSoonTitle": "Kommer snart til {name}",
+  "cities.comingSoonBody": "Vi er ikke startet her endnu, men vi samler interesse. Bliv med i WhatsApp-gruppen for at få opdateringer, når Meet & Talk kommer til {name}.",
+  "country.Italy": "Italien",
+  "country.Denmark": "Danmark",
+  "city.trento.description": "Her startede Meet & Talk — en imødekommende skare af lokale og internationale, der øver sprog over aperitivo i Dolomitternes portby.",
+  "city.copenhagen.description": "Hygge møder hello — hyggelige barer, varme mennesker og snesevis af sprog rundt om hvert bord i vores danske hjem.",
+  "city.bolzano.description": "Vi samler interesse til et language exchange i Bolzano — bliv med på ventelisten og vær den første til at vide, når vi lancerer.",
+  "city.verona.description": "Vi samler interesse til et language exchange i Verona — bliv med på ventelisten og vær den første til at vide, når vi lancerer.",
+  "city.padova.description": "Vi samler interesse til et language exchange i Padova — bliv med på ventelisten og vær den første til at vide, når vi lancerer.",
+  "press.sanbaradio-trento-2026.excerpt": "Katia Divina skriver om endelig at have fundet et uformelt sted i Trento til at møde mennesker og øve engelsk og tysk — født af idéen fra Gabriele Casagranda og Paolo Pelizzari.",
+  "organiser.gabriele.role": "City lead · Trento",
+  "organiser.gabriele.bio": "Født og opvokset i Trentino. Startede Meet & Talk her og mener, at den bedste måde at lære sprog på er i godt selskab med en aperitivo.",
+  "organiser.sofia.role": "City lead · Copenhagen",
+  "organiser.sofia.bio": "Svensk-dansk, flydende på fire sprog og altid på jagt efter byens hyggeligste barer.",
+  "organiser.noah.role": "Medarrangør · Copenhagen",
+  "organiser.noah.bio": "Det venlige ansigt ved døren, der sørger for, at ingen står alene."
 }

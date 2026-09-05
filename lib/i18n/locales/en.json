@@ -150,5 +150,21 @@
   "footer.getInvolved": "Get involved",
   "footer.rights": "A grassroots community project.",
   "theme.toggle": "Toggle theme",
-  "lang.toggle": "Change language"
+  "lang.toggle": "Change language",
+  "cities.comingSoonTitle": "Coming soon to {name}",
+  "cities.comingSoonBody": "We haven't launched here yet, but we're gathering interest. Join the WhatsApp group to get updates when Meet & Talk arrives in {name}.",
+  "country.Italy": "Italy",
+  "country.Denmark": "Denmark",
+  "city.trento.description": "Where Meet & Talk began — a welcoming crowd of locals and internationals practising languages over aperitivo in the Dolomites' gateway city.",
+  "city.copenhagen.description": "Hygge meets hello — cozy bars, warm people, and dozens of languages around every table in our Danish home.",
+  "city.bolzano.description": "We're building interest for a Bolzano language exchange — join the waitlist and be first to know when we launch.",
+  "city.verona.description": "We're building interest for a Verona language exchange — join the waitlist and be first to know when we launch.",
+  "city.padova.description": "We're building interest for a Padova language exchange — join the waitlist and be first to know when we launch.",
+  "press.sanbaradio-trento-2026.excerpt": "Katia Divina writes about finally finding an informal place in Trento to meet people and practice English and German — born from the idea of Gabriele Casagranda and Paolo Pelizzari.",
+  "organiser.gabriele.role": "City lead · Trento",
+  "organiser.gabriele.bio": "Born and raised in Trentino. Started Meet & Talk here and believes the best idea and the best way to learn languages is with good company and an aperitivo.",
+  "organiser.sofia.role": "City lead · Copenhagen",
+  "organiser.sofia.bio": "Swedish-Danish, fluent in four languages and always hunting for the coziest bars in town.",
+  "organiser.noah.role": "Co-organiser · Copenhagen",
+  "organiser.noah.bio": "The friendly face at the door making sure nobody stands alone."
 }
