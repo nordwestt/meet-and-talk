@@ -21,7 +21,7 @@ func Load() (Config, error) {
 	cfg := Config{
 		HTTPAddr:                getenv("HTTP_ADDR", ":3080"),
 		AdminAPIToken:           os.Getenv("ADMIN_API_TOKEN"),
-		TursoDatabaseURL:        getenv("TURSO_DATABASE_URL", "file:../content/local.db"),
+		TursoDatabaseURL:        getenv("TURSO_DATABASE_URL", "file:/var/meet-and-talk/content/local.db"),
 		TursoAuthToken:          os.Getenv("TURSO_AUTH_TOKEN"),
 		UploadDir:               getenv("UPLOAD_DIR", "/var/meet-and-talk/uploads"),
 		UploadURLPrefix:         getenv("UPLOAD_URL_PREFIX", "/uploads"),

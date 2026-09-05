@@ -8,7 +8,7 @@ Runs beside Next.js on the VPS; Caddy exposes it at `/admin-api`.
 ```bash
 cd api
 export ADMIN_API_TOKEN=dev-secret
-export TURSO_DATABASE_URL="file:../content/local.db"
+export TURSO_DATABASE_URL="file:/var/meet-and-talk/content/local.db"
 export UPLOAD_DIR=./.uploads
 export HTTP_ADDR=:3080
 go run ./cmd/server
@@ -99,7 +99,7 @@ Allowed folders: `cities`, `venues`, `events`, `people`, `community`, `misc`. Ma
 | Variable | Default | Notes |
 |----------|---------|--------|
 | `ADMIN_API_TOKEN` | required | Bearer token |
-| `TURSO_DATABASE_URL` | `file:../content/local.db` | Turso URL or `file:…` |
+| `TURSO_DATABASE_URL` | `file:/var/meet-and-talk/content/local.db` | Turso URL or `file:…` |
 | `TURSO_AUTH_TOKEN` | | Remote Turso only |
 | `HTTP_ADDR` | `:3080` | Listen address |
 | `UPLOAD_DIR` | `/var/meet-and-talk/uploads` | Persistent disk path |

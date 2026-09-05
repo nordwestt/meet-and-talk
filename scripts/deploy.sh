@@ -7,6 +7,8 @@ DEPLOY_DIR="${DEPLOY_DIR:-/opt/meet-and-talk}"
 RELEASE_URL="${RELEASE_URL:-https://github.com/nordwestt/meet-and-talk/releases/latest/download/meet-and-talk.zip}"
 ZIP_FILE="${DEPLOY_DIR}/meet-and-talk.zip"
 UPLOAD_DIR="${UPLOAD_DIR:-/var/meet-and-talk/uploads}"
+CONTENT_DIR="${CONTENT_DIR:-/var/meet-and-talk/content}"
+CONTENT_DB="${CONTENT_DIR}/local.db"
 CADDYFILE_DEST="${CADDYFILE_DEST:-/etc/caddy/Caddyfile}"
 
 mkdir -p "${DEPLOY_DIR}/logs"
@@ -40,6 +42,44 @@ if [[ ! -d "${UPLOAD_DIR}" ]]; then
     sudo mkdir -p "${UPLOAD_DIR}"
     sudo chown "${USER}:${USER}" "${UPLOAD_DIR}"
   }
+fi
+
+# Local SQLite lives outside the release zip (same idea as uploads).
+echo "Ensuring content database directory exists (${CONTENT_DIR})..."
+if [[ ! -d "${CONTENT_DIR}" ]]; then
+  mkdir -p "${CONTENT_DIR}" 2>/dev/null || {
+    sudo mkdir -p "${CONTENT_DIR}"
+    sudo chown "${USER}:${USER}" "${CONTENT_DIR}"
+  }
+fi
+if [[ ! -f "${CONTENT_DB}" ]]; then
+  for candidate in \
+    "${DEPLOY_DIR}/content/local.db" \
+    /root/content/local.db \
+    /opt/content/local.db \
+    /root/meet-and-talk/content/local.db
+  do
+    if [[ -f "${candidate}" ]]; then
+      echo "Migrating database from ${candidate}"
+      cp "${candidate}" "${CONTENT_DB}"
+      break
+    fi
+  done
+fi
+
+# Relative file: URLs break when cwd changes; pin local DB to the persistent path.
+if [[ -z "${TURSO_DATABASE_URL:-}" ]]; then
+  echo "Setting TURSO_DATABASE_URL=file:${CONTENT_DB} in .env"
+  printf '\nTURSO_DATABASE_URL=file:%s\n' "${CONTENT_DB}" >> .env
+  TURSO_DATABASE_URL="file:${CONTENT_DB}"
+elif [[ "${TURSO_DATABASE_URL}" == file:../content/local.db \
+   || "${TURSO_DATABASE_URL}" == file:./content/local.db \
+   || "${TURSO_DATABASE_URL}" == file:content/local.db ]]; then
+  echo "Updating TURSO_DATABASE_URL in .env → file:${CONTENT_DB}"
+  tmp_env="$(mktemp)"
+  sed "s|^TURSO_DATABASE_URL=.*|TURSO_DATABASE_URL=file:${CONTENT_DB}|" .env > "${tmp_env}"
+  mv "${tmp_env}" .env
+  TURSO_DATABASE_URL="file:${CONTENT_DB}"
 fi
 
 ./check-deploy.sh
