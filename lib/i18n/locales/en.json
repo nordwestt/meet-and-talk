@@ -99,6 +99,8 @@
   "events.title": "Upcoming events",
   "events.subtitle": "Find your next conversation across all our cities.",
   "events.viewAll": "View all events",
+  "events.empty": "Nothing coming up just yet — new events are added regularly, so check back soon.",
+  "events.emptyFiltered": "No events match these filters. Try another city or topic.",
   "events.filter.all": "All cities",
   "events.filter.allTopics": "All topics",
   "venues.hero.badge": "For bars, cafés & venues",

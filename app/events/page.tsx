@@ -79,7 +79,11 @@ export default function EventsPage() {
             ))}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground">{t('label.noEvents')}</p>
+          <p className="text-center text-muted-foreground">
+            {cityFilter === 'all' && topicFilter === 'all'
+              ? t('events.empty')
+              : t('events.emptyFiltered')}
+          </p>
         )}
       </section>
     </>

@@ -99,6 +99,8 @@
   "events.title": "Kommende begivenheder",
   "events.subtitle": "Find din næste samtale på tværs af alle vores byer.",
   "events.viewAll": "Se alle begivenheder",
+  "events.empty": "Ingen kommende begivenheder lige nu — nye tilføjes løbende, så kig forbi snart.",
+  "events.emptyFiltered": "Ingen begivenheder matcher filtrene. Prøv en anden by eller et andet emne.",
   "events.filter.all": "Alle byer",
   "events.filter.allTopics": "Alle emner",
   "venues.hero.badge": "Til barer, caféer & steder",

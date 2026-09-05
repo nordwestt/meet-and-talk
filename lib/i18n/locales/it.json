@@ -99,6 +99,8 @@
   "events.title": "Prossimi eventi",
   "events.subtitle": "Trova la tua prossima conversazione in tutte le nostre città.",
   "events.viewAll": "Vedi tutti gli eventi",
+  "events.empty": "Nessun evento in arrivo al momento — ne aggiungiamo di nuovi regolarmente, torna a trovarci presto.",
+  "events.emptyFiltered": "Nessun evento corrisponde a questi filtri. Prova un'altra città o un altro tema.",
   "events.filter.all": "Tutte le città",
   "events.filter.allTopics": "Tutti i temi",
   "venues.hero.badge": "Per bar, caffè e locali",
