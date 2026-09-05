@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ExternalLink, Newspaper } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { intlLocales } from '@/lib/i18n/config'
 import { useI18n } from '@/lib/i18n/context'
 import type { PressMention } from '@/lib/types'
 
@@ -16,13 +17,10 @@ export function PressMentionCard({
   const { t, tc, locale } = useI18n()
   const excerpt = tc(`press.${item.id}.excerpt`, item.excerpt)
   const formattedDate = item.date
-    ? new Date(`${item.date}T00:00:00`).toLocaleDateString(
-        locale === 'da' ? 'da-DK' : locale === 'it' ? 'it-IT' : 'en-GB',
-        {
-          month: 'long',
-          year: 'numeric',
-        },
-      )
+    ? new Date(`${item.date}T00:00:00`).toLocaleDateString(intlLocales[locale], {
+        month: 'long',
+        year: 'numeric',
+      })
     : null
 
   return (

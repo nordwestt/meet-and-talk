@@ -15,7 +15,7 @@ import { useContent } from '@/lib/content/context'
 import { useI18n } from '@/lib/i18n/context'
 
 export default function EventsPage() {
-  const { t } = useI18n()
+  const { t, tc } = useI18n()
   const { cities, getSortedEvents, topics } = useContent()
   const [cityFilter, setCityFilter] = useState('all')
   const [topicFilter, setTopicFilter] = useState('all')
@@ -64,7 +64,7 @@ export default function EventsPage() {
                   .filter((topic) => topic.status === 'live')
                   .map((topic) => (
                     <SelectItem key={topic.id} value={topic.id}>
-                      {topic.name}
+                      {tc(`topic.${topic.id}.name`, topic.name)}
                     </SelectItem>
                   ))}
               </SelectContent>

@@ -6,15 +6,25 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { useContent } from '@/lib/content/context'
 import { formatEventDate } from '@/lib/data'
+import { intlLocales } from '@/lib/i18n/config'
 import { useI18n } from '@/lib/i18n/context'
 import type { MeetEvent } from '@/lib/types'
 
 export function EventCard({ event }: { event: MeetEvent }) {
-  const { t } = useI18n()
+  const { t, tc, locale } = useI18n()
   const { getCity, getTopic, getVenue } = useContent()
   const city = getCity(event.cityId)
   const venue = getVenue(event.venueId)
   const topic = getTopic(event.topicId)
+  const topicName = topic
+    ? tc(`topic.${topic.id}.name`, topic.name)
+    : null
+  const price = event.price
+    ? tc(`price.${event.price}`, event.price)
+    : null
+  const recurring = event.recurring
+    ? tc(`weekday.${event.recurring}`, event.recurring)
+    : null
 
   return (
     <Link
@@ -34,17 +44,17 @@ export function EventCard({ event }: { event: MeetEvent }) {
           <div className="size-full bg-muted" />
         )}
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-          {topic ? (
+          {topicName ? (
             <Badge
               className="border-0 shadow-sm"
-              style={{ backgroundColor: topic.color, color: 'var(--primary-foreground)' }}
+              style={{ backgroundColor: topic!.color, color: 'var(--primary-foreground)' }}
             >
-              {topic.name}
+              {topicName}
             </Badge>
           ) : null}
-          {event.price ? (
+          {price ? (
             <Badge variant="secondary" className="shadow-sm">
-              {event.price}
+              {price}
             </Badge>
           ) : null}
         </div>
@@ -54,7 +64,7 @@ export function EventCard({ event }: { event: MeetEvent }) {
         <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <CalendarDays className="size-3.5" />
-            {formatEventDate(event.date)}
+            {formatEventDate(event.date, intlLocales[locale])}
           </span>
           <span className="inline-flex items-center gap-1">
             <Clock className="size-3.5" />
@@ -73,10 +83,10 @@ export function EventCard({ event }: { event: MeetEvent }) {
               {venue.name}, {city.name}
             </span>
           ) : null}
-          {event.recurring ? (
+          {recurring ? (
             <span className="inline-flex items-center gap-1.5">
               <Repeat className="size-3.5 shrink-0 text-primary" />
-              {event.recurring}
+              {recurring}
             </span>
           ) : null}
         </div>

@@ -189,7 +189,9 @@ export function CityDetailView({
                           >
                             <TopicIcon name={topic.icon} className="size-4" />
                           </div>
-                          <span className="text-sm font-medium">{topic.name}</span>
+                          <span className="text-sm font-medium">
+                            {tc(`topic.${topic.id}.name`, topic.name)}
+                          </span>
                         </Link>
                       </li>
                     ))}
