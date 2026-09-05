@@ -1,12 +1,4 @@
-export const locales = [
-  'en',
-  'da',
-  'it',
-  'es',
-  'de',
-  'fr',
-  'pt',
-] as const
+export const locales = ['en', 'da', 'it'] as const
 
 export type Locale = (typeof locales)[number]
 
@@ -19,8 +11,4 @@ export const localeMeta: Record<
   en: { label: 'English', flag: '🇬🇧', english: 'English' },
   da: { label: 'Dansk', flag: '🇩🇰', english: 'Danish' },
   it: { label: 'Italiano', flag: '🇮🇹', english: 'Italian' },
-  es: { label: 'Español', flag: '🇪🇸', english: 'Spanish' },
-  de: { label: 'Deutsch', flag: '🇩🇪', english: 'German' },
-  fr: { label: 'Français', flag: '🇫🇷', english: 'French' },
-  pt: { label: 'Português', flag: '🇵🇹', english: 'Portuguese' },
 }
