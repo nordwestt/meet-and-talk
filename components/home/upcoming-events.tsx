@@ -21,26 +21,34 @@ export function UpcomingEvents() {
           title={t('events.title')}
           subtitle={t('events.subtitle')}
         >
-          <Button asChild variant="ghost" className="hidden gap-1 sm:inline-flex">
-            <Link href="/events">
-              {t('events.viewAll')}
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
+          {events.length > 0 ? (
+            <Button asChild variant="ghost" className="hidden gap-1 sm:inline-flex">
+              <Link href="/events">
+                {t('events.viewAll')}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          ) : null}
         </SectionHeading>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-        <div className="mt-8 flex justify-center sm:hidden">
-          <Button asChild variant="outline" className="gap-1">
-            <Link href="/events">
-              {t('events.viewAll')}
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-        </div>
+        {events.length > 0 ? (
+          <>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {events.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+            <div className="mt-8 flex justify-center sm:hidden">
+              <Button asChild variant="outline" className="gap-1">
+                <Link href="/events">
+                  {t('events.viewAll')}
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+          </>
+        ) : (
+          <p className="mt-8 text-center text-muted-foreground">{t('events.empty')}</p>
+        )}
       </div>
     </section>
   )

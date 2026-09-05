@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ExternalLink, Newspaper } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { intlLocales } from '@/lib/i18n/config'
 import { useI18n } from '@/lib/i18n/context'
 import type { PressMention } from '@/lib/types'
 
@@ -13,9 +14,10 @@ export function PressMentionCard({
   item: PressMention
   compact?: boolean
 }) {
-  const { t } = useI18n()
+  const { t, tc, locale } = useI18n()
+  const excerpt = tc(`press.${item.id}.excerpt`, item.excerpt)
   const formattedDate = item.date
-    ? new Date(`${item.date}T00:00:00`).toLocaleDateString('en-GB', {
+    ? new Date(`${item.date}T00:00:00`).toLocaleDateString(intlLocales[locale], {
         month: 'long',
         year: 'numeric',
       })
@@ -45,7 +47,7 @@ export function PressMentionCard({
           {item.title}
         </h3>
         <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
-          {item.excerpt}
+          {excerpt}
         </p>
       </div>
 
@@ -65,13 +67,16 @@ export function PressMentionCard({
 
 /** Inline callout for city pages */
 export function PressCallout({ item }: { item: PressMention }) {
+  const { t, tc } = useI18n()
+  const excerpt = tc(`press.${item.id}.excerpt`, item.excerpt)
+
   return (
     <div className="rounded-2xl border-2 border-border bg-secondary/25 p-5">
       <p className="mb-2 font-display text-sm font-bold uppercase tracking-widest text-primary">
-        In the press
+        {t('press.inThePress')}
       </p>
       <p className="mb-3 text-pretty text-sm leading-relaxed text-muted-foreground">
-        &ldquo;{item.excerpt}&rdquo;
+        &ldquo;{excerpt}&rdquo;
       </p>
       <Link
         href={item.url}

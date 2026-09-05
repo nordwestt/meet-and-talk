@@ -13,10 +13,9 @@ export const siteConfig = {
   },
   /** Global social links (city pages override with their own) */
   social: [
-    { platform: 'instagram', url: 'https://instagram.com/', handle: '@meetandtalk' },
-    { platform: 'whatsapp', url: 'https://chat.whatsapp.com/meetandtalk', handle: 'Community chat' },
-    { platform: 'telegram', url: 'https://t.me/', handle: '@meetandtalk' },
-    { platform: 'email', url: 'mailto:hello@meetandtalk.community', handle: 'hello@meetandtalk.community' },
+    { platform: 'instagram', url: 'https://www.instagram.com/meetandtalk.trento', handle: '@meetandtalk' },
+    { platform: 'whatsapp', url: 'https://chat.whatsapp.com/HTTpyIo9nfxKP9wMpUWd1D', handle: 'Community chat' },
+
   ] satisfies SocialLink[],
 }
 

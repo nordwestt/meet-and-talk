@@ -39,8 +39,17 @@ export function createLookups(bundle: ContentBundle): ContentLookups {
     bundle.events.find((e) => e.id === idOrSlug || e.slug === idOrSlug)
   const getLiveCities = () => bundle.cities.filter((c) => c.status === 'live')
   const getPlannedCities = () => bundle.cities.filter((c) => c.status === 'planned')
-  const getSortedEvents = () =>
-    [...bundle.events].sort((a, b) => a.date.localeCompare(b.date))
+  const getSortedEvents = () => {
+    const now = new Date()
+    const today = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+    ].join('-')
+    return bundle.events
+      .filter((e) => e.date >= today)
+      .sort((a, b) => a.date.localeCompare(b.date))
+  }
   const getEventsByCity = (cityId: string) =>
     getSortedEvents().filter((e) => e.cityId === cityId)
   const getEventsByTopic = (topicId: string) =>
