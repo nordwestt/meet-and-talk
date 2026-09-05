@@ -82,9 +82,9 @@ pm2 logs meet-and-talk --lines 50
 pm2 logs meet-and-talk-api --lines 50
 ./check-deploy.sh
 curl -s http://127.0.0.1:3080/v1/health
-NODE_ENV=production PORT=3000 HOSTNAME=127.0.0.1 node server.js
 ```
 
 - **Node too old** — install Node 20 from NodeSource, then `./deploy.sh`
 - **Low memory (512 MB VPS)** — add swap: `sudo fallocate -l 1G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile`
 - **Caddy not reloaded** — `sudo cp Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy`
+- **Missing .env after first deploy to `/opt`** — if you previously ran deploy from another directory, copy it: `cp /root/.env /opt/meet-and-talk/.env` (adjust path), then `./deploy.sh`

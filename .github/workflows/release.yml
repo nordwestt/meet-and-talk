@@ -21,6 +21,13 @@ jobs:
           echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
           echo "TAG=v${VERSION}" >> "$GITHUB_ENV"
 
+      - name: Ensure release tag is new
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "::error::Tag ${TAG} already exists. Bump package.json version before releasing (merging to release without a bump re-publishes the old tag)."
+            exit 1
+          fi
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
